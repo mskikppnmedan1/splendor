@@ -1,33 +1,14 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Baca kedua custom cookie
   const kppnSession = request.cookies.get('kppn_session')?.value
+  const satkerSession = request.cookies.get('satker_session')?.value
+
   const kppnUser = kppnSession ? JSON.parse(kppnSession) : null
-
-  let satkerUser = null
-  let supabaseResponse = NextResponse.next({ request })
-
-  if (!kppnUser) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return request.cookies.getAll() },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-    const { data: { user } } = await supabase.auth.getUser()
-    satkerUser = user
-  }
+  const satkerUser = satkerSession ? JSON.parse(satkerSession) : null
 
   const isLoggedIn = kppnUser || satkerUser
   const role = kppnUser ? 'kppn' : (satkerUser ? 'satker' : null)
@@ -55,7 +36,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/admin', request.url))
   }
 
-  return supabaseResponse
+  return NextResponse.next()
 }
 
 export const config = {
