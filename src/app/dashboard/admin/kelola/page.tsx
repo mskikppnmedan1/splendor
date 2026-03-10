@@ -212,7 +212,7 @@ export default function KelolaUser() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-slate-800">Kelola User</h1>
-            <p className="text-sm text-slate-500 mt-1">Tambah, reset password, atau hapus akun satker</p>
+            <p className="text-sm text-slate-700 mt-1">Tambah, reset password, atau hapus akun satker</p>
           </div>
           <div className="flex gap-2 shrink-0">
             <button onClick={() => openModal("import")}
@@ -229,17 +229,17 @@ export default function KelolaUser() {
         {/* Table — desktop */}
         <div className="mt-4 md:mt-6 bg-white rounded-xl border border-slate-200 overflow-hidden hidden md:block">
           {loading ? (
-            <div className="p-8 text-center text-sm text-slate-400">Memuat data...</div>
+            <div className="p-8 text-center text-sm text-slate-700">Memuat data...</div>
           ) : satkerList.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-400">Belum ada satker</div>
+            <div className="p-8 text-center text-sm text-slate-700">Belum ada satker</div>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Nama Satker</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Kode Satker</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Tanggal Daftar</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Aksi</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-700">Nama Satker</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-700">Kode Satker</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-700">Tanggal Daftar</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-700">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -247,7 +247,7 @@ export default function KelolaUser() {
                   <tr key={s.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 text-slate-800 font-medium">{s.nama_satker || "-"}</td>
                     <td className="px-4 py-3 text-slate-600">{s.kode_satker || "-"}</td>
-                    <td className="px-4 py-3 text-slate-400 text-xs">
+                    <td className="px-4 py-3 text-slate-700 text-xs">
                       {new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                     </td>
                     <td className="px-4 py-3">
@@ -272,14 +272,14 @@ export default function KelolaUser() {
         {/* Card list — mobile */}
         <div className="mt-4 space-y-2 md:hidden">
           {loading ? (
-            <div className="p-8 text-center text-sm text-slate-400">Memuat data...</div>
+            <div className="p-8 text-center text-sm text-slate-700">Memuat data...</div>
           ) : satkerList.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-400">Belum ada satker</div>
+            <div className="p-8 text-center text-sm text-slate-700">Belum ada satker</div>
           ) : satkerList.map(s => (
             <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4">
               <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
-              <p className="text-xs text-slate-500 mt-1">Kode: {s.kode_satker || "-"}</p>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-700 mt-1">Kode: {s.kode_satker || "-"}</p>
+              <p className="text-xs text-slate-700 mt-0.5">
                 {new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </p>
               <div className="flex gap-2 mt-3">
@@ -308,7 +308,7 @@ export default function KelolaUser() {
                 {modalType === "hapus" && "Hapus Satker"}
                 {modalType === "import" && "Import Satker dari Excel"}
               </h2>
-              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+              <button onClick={closeModal} className="text-slate-700 hover:text-slate-600 text-xl leading-none">&times;</button>
             </div>
 
             <div className="px-6 py-5 space-y-4">
@@ -322,7 +322,7 @@ export default function KelolaUser() {
                     <input value={formNama} onChange={e => setFormNama(e.target.value)} placeholder="Nama instansi/satker" className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Kode Satker <span className="text-slate-400">(digunakan sebagai username)</span></label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Kode Satker <span className="text-slate-700">(digunakan sebagai username)</span></label>
                     <input value={formKode} onChange={e => setFormKode(e.target.value)} placeholder="Contoh: 019364" className={inputCls} />
                   </div>
                   <div>
@@ -339,7 +339,7 @@ export default function KelolaUser() {
               {/* Modal Reset Password */}
               {modalType === "reset-password" && (
                 <>
-                  <p className="text-xs text-slate-400">Password baru untuk <strong>{selectedSatker?.nama_satker}</strong> ({selectedSatker?.kode_satker}).</p>
+                  <p className="text-xs text-slate-700">Password baru untuk <strong>{selectedSatker?.nama_satker}</strong> ({selectedSatker?.kode_satker}).</p>
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">Password Baru</label>
                     <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimal 6 karakter" className={inputCls} />
@@ -373,7 +373,7 @@ export default function KelolaUser() {
                   {/* Step 1: Upload file */}
                   <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-5 text-center">
                     <p className="text-sm font-medium text-slate-600 mb-1">Upload file Excel</p>
-                    <p className="text-xs text-slate-400 mb-3">Kolom A = Kode Satker, Kolom B = Nama Satker (baris pertama = header)</p>
+                    <p className="text-xs text-slate-700 mb-3">Kolom A = Kode Satker, Kolom B = Nama Satker (baris pertama = header)</p>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -393,7 +393,7 @@ export default function KelolaUser() {
                   {importRows.length > 0 && (
                     <div>
                       <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                        Password Default <span className="text-slate-400">(untuk semua satker yang diimport)</span>
+                        Password Default <span className="text-slate-700">(untuk semua satker yang diimport)</span>
                       </label>
                       <input
                         value={importPassword}
@@ -429,7 +429,7 @@ export default function KelolaUser() {
                       {/* Progress bar */}
                       {modalLoading && (
                         <div>
-                          <div className="flex justify-between text-xs text-slate-400 mb-1">
+                          <div className="flex justify-between text-xs text-slate-700 mb-1">
                             <span>Mengimport...</span>
                             <span>{importProgress}%</span>
                           </div>
@@ -447,9 +447,9 @@ export default function KelolaUser() {
                         <table className="w-full text-xs">
                           <thead className="bg-slate-50 border-b border-slate-100 sticky top-0">
                             <tr>
-                              <th className="text-left px-3 py-2 text-slate-500 font-medium">Kode</th>
-                              <th className="text-left px-3 py-2 text-slate-500 font-medium">Nama Satker</th>
-                              <th className="text-left px-3 py-2 text-slate-500 font-medium">Status</th>
+                              <th className="text-left px-3 py-2 text-slate-700 font-medium">Kode</th>
+                              <th className="text-left px-3 py-2 text-slate-700 font-medium">Nama Satker</th>
+                              <th className="text-left px-3 py-2 text-slate-700 font-medium">Status</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-50">
@@ -458,7 +458,7 @@ export default function KelolaUser() {
                                 <td className="px-3 py-2 text-slate-600 font-mono">{row.kode_satker}</td>
                                 <td className="px-3 py-2 text-slate-700">{row.nama_satker}</td>
                                 <td className="px-3 py-2">
-                                  {row.status === "pending" && <span className="text-slate-400">Menunggu</span>}
+                                  {row.status === "pending" && <span className="text-slate-700">Menunggu</span>}
                                   {row.status === "success" && <span className="text-green-600 font-medium">✓ Berhasil</span>}
                                   {row.status === "duplicate" && <span className="text-amber-500">⚠ {row.error}</span>}
                                   {row.status === "error" && <span className="text-rose-500">✗ {row.error}</span>}
