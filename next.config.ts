@@ -1,7 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // tidak perlu konfigurasi tambahan,
+  // alias @/ sudah otomatis merujuk ke root project
+}
 
-export default nextConfig;
+export default nextConfig
