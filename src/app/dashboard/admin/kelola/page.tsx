@@ -191,10 +191,6 @@ export default function KelolaUser() {
             <p className="text-sm text-slate-500 mt-1">Tambah, reset password, atau hapus akun satker</p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <button onClick={() => openModal("import")}
-              className="px-3 md:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors">
-              ↑ Import Excel
-            </button>
             <button onClick={() => openModal("tambah")}
               className="px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
               + Tambah
