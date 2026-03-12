@@ -359,8 +359,8 @@ export default function DashboardAdmin() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Nama Satker</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Kode Satker</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Nama Satker</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Update Terakhir</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Aksi</th>
                 </tr>
@@ -368,8 +368,8 @@ export default function DashboardAdmin() {
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-800 font-medium">{s.nama_satker || "-"}</td>
                     <td className="px-4 py-3 text-slate-600">{s.kode_satker || "-"}</td>
+                    <td className="px-4 py-3 text-slate-800 font-medium">{s.nama_satker || "-"}</td>
                     <td className="px-4 py-3 text-slate-500 text-xs">
                       {s.updated_at ? (
                         new Date(s.updated_at).toLocaleString("id-ID", {
