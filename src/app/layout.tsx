@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Informasi Satuan Kerja",
+  title: "Sarana Penyelesaian Dokumen Organisasi",
   description: "Dashboard Satuan Kerja KPPN Medan I",
 };
 
