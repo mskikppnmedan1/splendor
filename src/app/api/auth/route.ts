@@ -44,10 +44,12 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Login KPPN ────────────────────────────────────────
+    // Ambil user dari tabel users dengan role kppn
     const { data: user, error } = await supabase
-      .from('users_kppn')
+      .from('users')
       .select('*')
       .eq('username', username)
+      .eq('role', 'kppn')
       .single()
 
     if (error || !user) {
@@ -58,6 +60,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Akun dinonaktifkan. Hubungi administrator.' }, { status: 403 })
     }
 
+    // Verifikasi password pakai verify_kppn
     const { data: verified } = await supabase
       .rpc('verify_kppn', { p_username: username, p_password: password })
 
