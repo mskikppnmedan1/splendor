@@ -22,6 +22,7 @@ type ProfilSatker = {
   nama_ppk3: string; nip_ppk3: string; hp_ppk3: string;
   nama_ppk4: string; nip_ppk4: string; hp_ppk4: string;
   nama_ppspm: string; nip_ppspm: string; hp_ppspm: string;
+  nama_bendahara: string; nip_bendahara: string; hp_bendahara: string;
   nama_bendahara_pengeluaran: string; nip_bendahara_pengeluaran: string; hp_bendahara_pengeluaran: string;
   nama_bendahara_penerimaan: string; nip_bendahara_penerimaan: string; hp_bendahara_penerimaan: string;
   nama_bendahara_pembantu: string; nip_bendahara_pembantu: string; hp_bendahara_pembantu: string;
@@ -53,6 +54,7 @@ const emptyProfil: ProfilSatker = {
   nama_ppk3: "", nip_ppk3: "", hp_ppk3: "",
   nama_ppk4: "", nip_ppk4: "", hp_ppk4: "",
   nama_ppspm: "", nip_ppspm: "", hp_ppspm: "",
+  nama_bendahara: "", nip_bendahara: "", hp_bendahara: "",
   nama_bendahara_pengeluaran: "", nip_bendahara_pengeluaran: "", hp_bendahara_pengeluaran: "",
   nama_bendahara_penerimaan: "", nip_bendahara_penerimaan: "", hp_bendahara_penerimaan: "",
   nama_bendahara_pembantu: "", nip_bendahara_pembantu: "", hp_bendahara_pembantu: "",
@@ -375,6 +377,7 @@ export default function DashboardAdmin() {
         "Nama PPK 3": p.nama_ppk3, "NIP PPK 3": p.nip_ppk3, "HP PPK 3": p.hp_ppk3,
         "Nama PPK 4": p.nama_ppk4, "NIP PPK 4": p.nip_ppk4, "HP PPK 4": p.hp_ppk4,
         "Nama PPSPM": p.nama_ppspm, "NIP PPSPM": p.nip_ppspm, "HP PPSPM": p.hp_ppspm,
+        "Nama Bendahara": p.nama_bendahara, "NIP Bendahara": p.nip_bendahara, "HP Bendahara": p.hp_bendahara,
         "Nama Bendahara Pengeluaran": p.nama_bendahara_pengeluaran, "NIP Bendahara Pengeluaran": p.nip_bendahara_pengeluaran, "HP Bendahara Pengeluaran": p.hp_bendahara_pengeluaran,
         "Nama Bendahara Penerimaan": p.nama_bendahara_penerimaan, "NIP Bendahara Penerimaan": p.nip_bendahara_penerimaan, "HP Bendahara Penerimaan": p.hp_bendahara_penerimaan,
         "Nama Bendahara Pembantu": p.nama_bendahara_pembantu, "NIP Bendahara Pembantu": p.nip_bendahara_pembantu, "HP Bendahara Pembantu": p.hp_bendahara_pembantu,
@@ -640,6 +643,7 @@ export default function DashboardAdmin() {
                         <PejabatCard jabatan="PPK 3" nama={selectedProfil.nama_ppk3} nip={selectedProfil.nip_ppk3} hp={selectedProfil.hp_ppk3} />
                         <PejabatCard jabatan="PPK 4" nama={selectedProfil.nama_ppk4} nip={selectedProfil.nip_ppk4} hp={selectedProfil.hp_ppk4} />
                         <PejabatCard jabatan="PPSPM" nama={selectedProfil.nama_ppspm} nip={selectedProfil.nip_ppspm} hp={selectedProfil.hp_ppspm} />
+                        <PejabatCard jabatan="Bendahara" nama={selectedProfil.nama_bendahara} nip={selectedProfil.nip_bendahara} hp={selectedProfil.hp_bendahara} />
                         <PejabatCard jabatan="Bendahara Pengeluaran" nama={selectedProfil.nama_bendahara_pengeluaran} nip={selectedProfil.nip_bendahara_pengeluaran} hp={selectedProfil.hp_bendahara_pengeluaran} />
                         <PejabatCard jabatan="Bendahara Penerimaan" nama={selectedProfil.nama_bendahara_penerimaan} nip={selectedProfil.nip_bendahara_penerimaan} hp={selectedProfil.hp_bendahara_penerimaan} />
                         <PejabatCard jabatan="Bendahara Pembantu" nama={selectedProfil.nama_bendahara_pembantu} nip={selectedProfil.nip_bendahara_pembantu} hp={selectedProfil.hp_bendahara_pembantu} />
@@ -707,6 +711,7 @@ export default function DashboardAdmin() {
                       <PejabatFormGroup jabatan="PPK 3" prefix="ppk3" form={editForm} setForm={setEditForm} />
                       <PejabatFormGroup jabatan="PPK 4" prefix="ppk4" form={editForm} setForm={setEditForm} />
                       <PejabatFormGroup jabatan="PPSPM" prefix="ppspm" form={editForm} setForm={setEditForm} />
+                      <PejabatFormGroup jabatan="Bendahara" prefix="bendahara" form={editForm} setForm={setEditForm} />
                       <PejabatFormGroup jabatan="Bendahara Pengeluaran" prefix="bendahara_pengeluaran" form={editForm} setForm={setEditForm} />
                       <PejabatFormGroup jabatan="Bendahara Penerimaan" prefix="bendahara_penerimaan" form={editForm} setForm={setEditForm} />
                       <PejabatFormGroup jabatan="Bendahara Pembantu" prefix="bendahara_pembantu" form={editForm} setForm={setEditForm} />

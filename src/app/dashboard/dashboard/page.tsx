@@ -26,6 +26,9 @@ type ProfilSatker = {
   nama_ppspm: string;
   nip_ppspm: string;
   hp_ppspm: string;
+  nama_bendahara: string;
+  nip_bendahara: string;
+  hp_bendahara: string;
   nama_bendahara_pengeluaran: string;
   nip_bendahara_pengeluaran: string;
   hp_bendahara_pengeluaran: string;
@@ -67,6 +70,9 @@ const empty: ProfilSatker = {
   nama_ppspm: "",
   nip_ppspm: "",
   hp_ppspm: "",
+  nama_bendahara: "",
+  nip_bendahara: "",
+  hp_bendahara: "",
   nama_bendahara_pengeluaran: "",
   nip_bendahara_pengeluaran: "",
   hp_bendahara_pengeluaran: "",
@@ -85,8 +91,6 @@ const empty: ProfilSatker = {
   nama_pic4: "",
   hp_pic4: "",
 };
-
-// ─── Komponen di luar agar tidak re-mount setiap render ───────────────────────
 
 const inputCls =
   "mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -158,8 +162,6 @@ const PejabatGroup = ({
     <Input label="No. HP" field={hpField} type="tel" form={form} setForm={setForm} />
   </div>
 );
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardSatker() {
   const [sessionUser, setSessionUser] = useState<{ id: string; username: string; nama: string } | null>(null);
@@ -255,7 +257,6 @@ export default function DashboardSatker() {
     profil.nama_pic1 &&
     profil.nama_pic2;
 
-  // ── Komponen PejabatSummary (di dalam karena pakai closure, tapi tidak ada state) ──
   const PejabatSummary = ({
     label,
     nama,
@@ -374,6 +375,7 @@ export default function DashboardSatker() {
                 <PejabatSummary label="PPK 3" nama={profil.nama_ppk3} nip={profil.nip_ppk3} hp={profil.hp_ppk3} />
                 <PejabatSummary label="PPK 4" nama={profil.nama_ppk4} nip={profil.nip_ppk4} hp={profil.hp_ppk4} />
                 <PejabatSummary label="PPSPM" nama={profil.nama_ppspm} nip={profil.nip_ppspm} hp={profil.hp_ppspm} />
+                <PejabatSummary label="Bendahara" nama={profil.nama_bendahara} nip={profil.nip_bendahara} hp={profil.hp_bendahara} />
                 <PejabatSummary label="Bendahara Pengeluaran" nama={profil.nama_bendahara_pengeluaran} nip={profil.nip_bendahara_pengeluaran} hp={profil.hp_bendahara_pengeluaran} />
                 <PejabatSummary label="Bendahara Penerimaan" nama={profil.nama_bendahara_penerimaan} nip={profil.nip_bendahara_penerimaan} hp={profil.hp_bendahara_penerimaan} />
                 <PejabatSummary label="Bendahara Pembantu" nama={profil.nama_bendahara_pembantu} nip={profil.nip_bendahara_pembantu} hp={profil.hp_bendahara_pembantu} />
@@ -421,6 +423,7 @@ export default function DashboardSatker() {
                 <PejabatGroup label="PPK 3" namaField="nama_ppk3" nipField="nip_ppk3" hpField="hp_ppk3" form={form} setForm={setForm} />
                 <PejabatGroup label="PPK 4" namaField="nama_ppk4" nipField="nip_ppk4" hpField="hp_ppk4" form={form} setForm={setForm} />
                 <PejabatGroup label="PPSPM" namaField="nama_ppspm" nipField="nip_ppspm" hpField="hp_ppspm" required form={form} setForm={setForm} />
+                <PejabatGroup label="Bendahara" namaField="nama_bendahara" nipField="nip_bendahara" hpField="hp_bendahara" form={form} setForm={setForm} />
                 <PejabatGroup label="Bendahara Pengeluaran" namaField="nama_bendahara_pengeluaran" nipField="nip_bendahara_pengeluaran" hpField="hp_bendahara_pengeluaran" required form={form} setForm={setForm} />
                 <PejabatGroup label="Bendahara Penerimaan" namaField="nama_bendahara_penerimaan" nipField="nip_bendahara_penerimaan" hpField="hp_bendahara_penerimaan" form={form} setForm={setForm} />
                 <PejabatGroup label="Bendahara Pembantu" namaField="nama_bendahara_pembantu" nipField="nip_bendahara_pembantu" hpField="hp_bendahara_pembantu" form={form} setForm={setForm} />
