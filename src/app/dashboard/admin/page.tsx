@@ -41,9 +41,7 @@ type ImportProfilRow = {
   error?: string;
 };
 
-// Kategori utama
-type ImportKategori = "kantor" | "pejabat" | "pic";
-// Sub-kategori pejabat
+type ImportKategori = "semua" | "kantor" | "pejabat" | "pic";
 type ImportSubPejabat = "semua" | "kpa" | "ppk" | "ppspm" | "bendahara";
 
 const emptyProfil: ProfilSatker = {
@@ -61,6 +59,21 @@ const emptyProfil: ProfilSatker = {
   nama_pic1: "", hp_pic1: "", nama_pic2: "", hp_pic2: "",
   nama_pic3: "", hp_pic3: "", nama_pic4: "", hp_pic4: "",
 };
+
+// Sanitize semua null/undefined → "" supaya input tidak error
+const sanitizeProfil = (p: Partial<ProfilSatker>): Partial<ProfilSatker> =>
+  Object.fromEntries(
+    Object.entries(p).map(([k, v]) => [k, v ?? ""])
+  ) as Partial<ProfilSatker>;
+
+// Semua field nama yang bisa dicari
+const NAMA_FIELDS: (keyof ProfilSatker)[] = [
+  "nama_kpa",
+  "nama_ppk1", "nama_ppk2", "nama_ppk3", "nama_ppk4",
+  "nama_ppspm",
+  "nama_bendahara", "nama_bendahara_pengeluaran", "nama_bendahara_penerimaan", "nama_bendahara_pembantu",
+  "nama_pic1", "nama_pic2", "nama_pic3", "nama_pic4",
+];
 
 const HEADER_MAP_KANTOR: Record<string, keyof ProfilSatker> = {
   "ALAMAT LENGKAP KANTOR": "alamat",
@@ -130,8 +143,37 @@ const COL_NAMA_OPTIONS = [
   "Nama Satker",
 ];
 
-// Config kategori utama
 const IMPORT_KATEGORI_CONFIG = {
+  semua: {
+    label: "Semua Data",
+    desc: "Profil kantor, pejabat, bendahara, dan PIC sekaligus",
+    headerMap: {
+      ...HEADER_MAP_KANTOR,
+      ...HEADER_MAP_KPA,
+      ...HEADER_MAP_PPK,
+      ...HEADER_MAP_PPSPM,
+      ...HEADER_MAP_BENDAHARA,
+      ...HEADER_MAP_PIC,
+    },
+    color: "slate",
+    exportCols: ["Nama Satker", "Kode Satker",
+      "Alamat", "No. Telp", "Email",
+      "Nama KPA", "NIP KPA", "HP KPA",
+      "Nama PPK 1", "NIP PPK 1", "HP PPK 1",
+      "Nama PPK 2", "NIP PPK 2", "HP PPK 2",
+      "Nama PPK 3", "NIP PPK 3", "HP PPK 3",
+      "Nama PPK 4", "NIP PPK 4", "HP PPK 4",
+      "Nama PPSPM", "NIP PPSPM", "HP PPSPM",
+      "Nama Bendahara Pengeluaran", "NIP Bendahara Pengeluaran", "HP Bendahara Pengeluaran",
+      "Nama Bendahara Penerimaan", "NIP Bendahara Penerimaan", "HP Bendahara Penerimaan",
+      "Nama Bendahara Pembantu", "NIP Bendahara Pembantu", "HP Bendahara Pembantu",
+      "Nama PIC 1", "HP PIC 1",
+      "Nama PIC 2", "HP PIC 2",
+      "Nama PIC 3", "HP PIC 3",
+      "Nama PIC 4", "HP PIC 4",
+    ],
+    hasSub: false,
+  },
   kantor: {
     label: "Profil Kantor",
     desc: "Alamat, nomor telepon, dan email kantor",
@@ -143,7 +185,7 @@ const IMPORT_KATEGORI_CONFIG = {
   pejabat: {
     label: "Pejabat Perbendaharaan",
     desc: "KPA, PPK, PPSPM, Bendahara",
-    headerMap: {} as Record<string, keyof ProfilSatker>, // ditentukan oleh sub
+    headerMap: {} as Record<string, keyof ProfilSatker>,
     color: "violet",
     exportCols: [] as string[],
     hasSub: true,
@@ -163,7 +205,6 @@ const IMPORT_KATEGORI_CONFIG = {
   },
 } as const;
 
-// Config sub-kategori pejabat
 const SUB_PEJABAT_CONFIG: Record<ImportSubPejabat, {
   label: string;
   desc: string;
@@ -255,7 +296,7 @@ const PejabatCard = ({ jabatan, nama, nip, hp }: { jabatan: string; nama?: strin
 const FormField = ({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) => (
   <div>
     <label className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
-    <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
+    <input type="text" value={value ?? ""} onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder || `Isi ${label.toLowerCase()}...`}
       className="w-full px-3 py-2 text-sm text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white transition-all" />
   </div>
@@ -264,14 +305,16 @@ const FormField = ({ label, value, onChange, placeholder }: { label: string; val
 const PejabatFormGroup = ({ jabatan, prefix, form, setForm, withNip = true }: { jabatan: string; prefix: string; form: ProfilSatker; setForm: (f: ProfilSatker) => void; withNip?: boolean }) => (
   <div className="p-3 rounded-lg border border-slate-100 bg-slate-50 space-y-2">
     <p className="text-xs font-semibold text-slate-600">{jabatan}</p>
-    <FormField label="Nama" value={(form as any)[`nama_${prefix}`] || ""} onChange={(v) => setForm({ ...form, [`nama_${prefix}`]: v })} />
-    {withNip && <FormField label="NIP" value={(form as any)[`nip_${prefix}`] || ""} onChange={(v) => setForm({ ...form, [`nip_${prefix}`]: v })} />}
-    <FormField label="HP" value={(form as any)[`hp_${prefix}`] || ""} onChange={(v) => setForm({ ...form, [`hp_${prefix}`]: v })} />
+    <FormField label="Nama" value={(form as any)[`nama_${prefix}`] ?? ""} onChange={(v) => setForm({ ...form, [`nama_${prefix}`]: v })} />
+    {withNip && <FormField label="NIP" value={(form as any)[`nip_${prefix}`] ?? ""} onChange={(v) => setForm({ ...form, [`nip_${prefix}`]: v })} />}
+    <FormField label="HP" value={(form as any)[`hp_${prefix}`] ?? ""} onChange={(v) => setForm({ ...form, [`hp_${prefix}`]: v })} />
   </div>
 );
 
 export default function DashboardAdmin() {
   const [satkerList, setSatkerList] = useState<Satker[]>([]);
+  const [profilMap, setProfilMap] = useState<Record<string, ProfilSatker>>({});
+  const [profilLoading, setProfilLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -279,7 +322,6 @@ export default function DashboardAdmin() {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedSatker, setSelectedSatker] = useState<Satker | null>(null);
   const [selectedProfil, setSelectedProfil] = useState<ProfilSatker | null>(null);
-  const [profilLoading, setProfilLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"kantor" | "pejabat" | "pic">("kantor");
 
   const [showEdit, setShowEdit] = useState(false);
@@ -289,6 +331,9 @@ export default function DashboardAdmin() {
   const [editTab, setEditTab] = useState<"kantor" | "pejabat" | "pic">("kantor");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [clearTarget, setClearTarget] = useState<Satker | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   const [showImport, setShowImport] = useState(false);
   const [importKategori, setImportKategori] = useState<ImportKategori | null>(null);
@@ -303,8 +348,21 @@ export default function DashboardAdmin() {
     setLoading(true);
     const res = await fetch("/api/satker/list");
     const data = await res.json();
-    setSatkerList((data.list || []).filter((s: Satker) => s.status === "aktif"));
+    const list: Satker[] = (data.list || []).filter((s: Satker) => s.status === "aktif");
+    setSatkerList(list);
     setLoading(false);
+
+    setProfilLoading(true);
+    const entries = await Promise.all(
+      list.map(async (s) => {
+        const res = await fetch(`/api/satker/profil?id=${s.id}`);
+        if (!res.ok) return [s.id, { ...emptyProfil }] as const;
+        const d = await res.json();
+        return [s.id, { ...emptyProfil, ...sanitizeProfil(d.profil || {}) }] as const;
+      })
+    );
+    setProfilMap(Object.fromEntries(entries));
+    setProfilLoading(false);
   };
 
   useEffect(() => { fetchSatker(); }, []);
@@ -315,17 +373,41 @@ export default function DashboardAdmin() {
   };
 
   const openDetail = async (satker: Satker) => {
-    setSelectedSatker(satker); setSelectedProfil(null); setShowDetail(true); setActiveTab("kantor"); setProfilLoading(true);
-    const res = await fetch(`/api/satker/profil?id=${satker.id}`);
-    if (res.ok) { const data = await res.json(); setSelectedProfil(data.profil); }
-    setProfilLoading(false);
+    setSelectedSatker(satker);
+    setShowDetail(true);
+    setActiveTab("kantor");
+    const cached = profilMap[satker.id];
+    setSelectedProfil(cached || null);
+    if (!cached) {
+      setProfilLoading(true);
+      const res = await fetch(`/api/satker/profil?id=${satker.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedProfil({ ...emptyProfil, ...sanitizeProfil(data.profil || {}) });
+      }
+      setProfilLoading(false);
+    }
   };
 
   const openEdit = async (satker: Satker) => {
-    setEditSatker(satker); setEditForm(emptyProfil); setShowEdit(true); setEditTab("kantor"); setSaveMsg(""); setEditLoading(true);
-    const res = await fetch(`/api/satker/profil?id=${satker.id}`);
-    if (res.ok) { const data = await res.json(); setEditForm({ ...emptyProfil, ...(data.profil || {}) }); }
-    setEditLoading(false);
+    setEditSatker(satker);
+    setEditForm(emptyProfil);
+    setShowEdit(true);
+    setEditTab("kantor");
+    setSaveMsg("");
+    const cached = profilMap[satker.id];
+    if (cached) {
+      // sanitize dulu supaya tidak ada null masuk ke input
+      setEditForm({ ...emptyProfil, ...sanitizeProfil(cached) });
+    } else {
+      setEditLoading(true);
+      const res = await fetch(`/api/satker/profil?id=${satker.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEditForm({ ...emptyProfil, ...sanitizeProfil(data.profil || {}) });
+      }
+      setEditLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -337,13 +419,31 @@ export default function DashboardAdmin() {
     });
     if (res.ok) {
       setSaveMsg("✓ Data berhasil disimpan");
+      setProfilMap((prev) => ({ ...prev, [editSatker.id]: { ...editForm } }));
       if (selectedSatker?.id === editSatker.id) setSelectedProfil({ ...editForm });
       setTimeout(() => { setSaveMsg(""); setShowEdit(false); }, 1500);
     } else { setSaveMsg("✗ Gagal menyimpan. Coba lagi."); }
     setSaving(false);
   };
 
-  // Export template kosong — hanya header + nama/kode satker, kolom data dikosongkan
+  const handleClearData = async () => {
+    if (!clearTarget) return;
+    setClearing(true);
+    const res = await fetch("/api/satker", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: clearTarget.id, profil: emptyProfil }),
+    });
+    if (res.ok) {
+      setProfilMap((prev) => ({ ...prev, [clearTarget.id]: { ...emptyProfil } }));
+      if (selectedSatker?.id === clearTarget.id) setSelectedProfil({ ...emptyProfil });
+    }
+    setClearing(false);
+    setShowConfirmClear(false);
+    setClearTarget(null);
+    setShowDetail(false);
+  };
+
+
   const handleExportTemplate = (colsFilter: string[]) => {
     const rows = satkerList.map((s) => {
       const row: Record<string, any> = {};
@@ -366,7 +466,7 @@ export default function DashboardAdmin() {
     const rows = await Promise.all(satkerList.map(async (s) => {
       const res = await fetch(`/api/satker/profil?id=${s.id}`);
       const data = res.ok ? await res.json() : {};
-      const p: ProfilSatker = { ...emptyProfil, ...(data.profil || {}) };
+      const p: ProfilSatker = { ...emptyProfil, ...sanitizeProfil(data.profil || {}) };
       const full: Record<string, any> = {
         "Nama Satker": s.nama_satker, "Kode Satker": s.kode_satker,
         "Tanggal Daftar": new Date(s.created_at).toLocaleDateString("id-ID"),
@@ -410,7 +510,6 @@ export default function DashboardAdmin() {
     setShowImport(true);
   };
 
-  // Ambil headerMap dan exportCols aktif berdasarkan state
   const getActiveConfig = (): { headerMap: Record<string, keyof ProfilSatker>; exportCols: string[]; label: string } | null => {
     if (!importKategori) return null;
     if (importKategori === "pejabat") {
@@ -499,9 +598,15 @@ export default function DashboardAdmin() {
   const skipCount = importRows.filter((r) => r.status === "skip").length;
   const errorCount = importRows.filter((r) => r.status === "error").length;
 
-  const filtered = satkerList.filter(
-    (s) => s.nama_satker?.toLowerCase().includes(search.toLowerCase()) || s.kode_satker?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = satkerList.filter((s) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    if (s.nama_satker?.toLowerCase().includes(q)) return true;
+    if (s.kode_satker?.toLowerCase().includes(q)) return true;
+    const p = profilMap[s.id];
+    if (!p) return false;
+    return NAMA_FIELDS.some((field) => p[field]?.toLowerCase().includes(q));
+  });
 
   const TABS = [
     { key: "kantor", label: "Profil Kantor" },
@@ -511,9 +616,9 @@ export default function DashboardAdmin() {
 
   const activeConfig = getActiveConfig();
 
-  // Tentukan "breadcrumb" judul modal import
   const getImportTitle = () => {
     if (!importKategori) return null;
+    if (importKategori === "semua") return "Semua Data";
     if (importKategori === "pejabat" && importSubPejabat) {
       return `Pejabat › ${SUB_PEJABAT_CONFIG[importSubPejabat].label}`;
     }
@@ -532,11 +637,14 @@ export default function DashboardAdmin() {
         <div className="mt-4 md:mt-6 flex flex-wrap items-center gap-2 md:gap-3">
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama atau kode satker..."
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama satker, kode, atau nama pejabat..."
               className="w-full pl-9 pr-4 py-2 text-sm text-slate-900 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all bg-white" />
           </div>
           {search && <button onClick={() => setSearch("")} className="text-xs text-slate-500 hover:text-slate-700 shrink-0">Reset</button>}
-          <p className="text-xs text-slate-500 shrink-0">{filtered.length} ditemukan</p>
+          <p className="text-xs text-slate-500 shrink-0">
+            {filtered.length} ditemukan
+            {profilLoading && !loading && <span className="ml-1 text-slate-300">(memuat profil...)</span>}
+          </p>
           <button onClick={openImport}
             className="shrink-0 px-3 py-2 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 text-slate-600 text-xs rounded-lg transition-colors flex items-center gap-1.5">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -573,10 +681,7 @@ export default function DashboardAdmin() {
                         {s.updated_at ? new Date(s.updated_at).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : <span className="text-slate-300 italic">Belum diisi</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
-                          <button onClick={() => openDetail(s)} className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-200">Detail</button>
-                          <button onClick={() => openEdit(s)} className="px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 transition-colors">Edit</button>
-                        </div>
+                        <button onClick={() => openDetail(s)} className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors">Detail</button>
                       </td>
                     </tr>
                   ))}
@@ -594,9 +699,8 @@ export default function DashboardAdmin() {
                 <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
                 <p className="text-xs text-slate-500 mt-1">Kode Satker: {s.kode_satker || "-"}</p>
                 <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>{new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
-                <div className="mt-3 inline-flex w-full rounded-lg border border-slate-200 overflow-hidden">
-                  <button onClick={() => openDetail(s)} className="flex-1 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-200">Detail</button>
-                  <button onClick={() => openEdit(s)} className="flex-1 py-1.5 text-xs text-blue-600 hover:bg-blue-50 transition-colors">Edit</button>
+                <div className="mt-3">
+                  <button onClick={() => openDetail(s)} className="w-full py-1.5 text-xs text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors">Detail</button>
                 </div>
               </div>
             ))}
@@ -614,6 +718,10 @@ export default function DashboardAdmin() {
                   <h2 className="text-sm font-semibold text-slate-800 mt-0.5 leading-snug break-words">{selectedSatker.nama_satker}</h2>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => { setClearTarget(selectedSatker); setShowConfirmClear(true); }}
+                    className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs rounded-lg border border-rose-200 transition-colors">
+                    Clear Data
+                  </button>
                   <button onClick={() => { setShowDetail(false); openEdit(selectedSatker); }} className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs rounded-lg border border-emerald-200 transition-colors">Edit</button>
                   <button onClick={() => setShowDetail(false)} className="text-slate-300 hover:text-slate-600 text-xl leading-none transition-colors">&times;</button>
                 </div>
@@ -696,11 +804,11 @@ export default function DashboardAdmin() {
                     <div className="space-y-3">
                       <div>
                         <label className="block text-xs font-medium text-slate-600 mb-1">Alamat Kantor</label>
-                        <textarea value={editForm.alamat} onChange={(e) => setEditForm({ ...editForm, alamat: e.target.value })} rows={3}
+                        <textarea value={editForm.alamat ?? ""} onChange={(e) => setEditForm({ ...editForm, alamat: e.target.value })} rows={3}
                           className="w-full px-3 py-2 text-sm text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 bg-white transition-all resize-none" />
                       </div>
-                      <FormField label="No. Telepon Kantor" value={editForm.no_telp} onChange={(v) => setEditForm({ ...editForm, no_telp: v })} />
-                      <FormField label="Email Kantor" value={editForm.email} onChange={(v) => setEditForm({ ...editForm, email: v })} />
+                      <FormField label="No. Telepon Kantor" value={editForm.no_telp ?? ""} onChange={(v) => setEditForm({ ...editForm, no_telp: v })} />
+                      <FormField label="Email Kantor" value={editForm.email ?? ""} onChange={(v) => setEditForm({ ...editForm, email: v })} />
                     </div>
                   )}
                   {editTab === "pejabat" && (
@@ -722,8 +830,8 @@ export default function DashboardAdmin() {
                       {([1, 2, 3, 4] as const).map((n) => (
                         <div key={n} className="p-3 rounded-lg border border-slate-100 bg-slate-50 space-y-2">
                           <p className="text-xs font-semibold text-slate-600">PIC/Operator {n}</p>
-                          <FormField label="Nama" value={(editForm as any)[`nama_pic${n}`] || ""} onChange={(v) => setEditForm({ ...editForm, [`nama_pic${n}`]: v })} />
-                          <FormField label="HP" value={(editForm as any)[`hp_pic${n}`] || ""} onChange={(v) => setEditForm({ ...editForm, [`hp_pic${n}`]: v })} />
+                          <FormField label="Nama" value={(editForm as any)[`nama_pic${n}`] ?? ""} onChange={(v) => setEditForm({ ...editForm, [`nama_pic${n}`]: v })} />
+                          <FormField label="HP" value={(editForm as any)[`hp_pic${n}`] ?? ""} onChange={(v) => setEditForm({ ...editForm, [`hp_pic${n}`]: v })} />
                         </div>
                       ))}
                     </div>
@@ -760,7 +868,24 @@ export default function DashboardAdmin() {
                 <>
                   <p className="text-xs text-slate-500">Pilih kategori data yang ingin diimport:</p>
                   <div className="grid grid-cols-1 gap-3">
-                    {/* Profil Kantor */}
+
+                    {/* Semua Data */}
+                    <button onClick={() => { setImportKategori("semua"); setImportSubPejabat(null); setImportRows([]); setImportDone(false); }}
+                      className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition-all text-left group">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-slate-100">
+                        <svg className="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">Semua Data</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Profil kantor, pejabat, bendahara, dan PIC sekaligus</p>
+                      </div>
+                      <svg className="w-4 h-4 text-slate-300 group-hover:text-slate-500 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
                     <button onClick={() => { setImportKategori("kantor"); setImportSubPejabat(null); setImportRows([]); setImportDone(false); }}
                       className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-blue-100">
@@ -777,7 +902,6 @@ export default function DashboardAdmin() {
                       </svg>
                     </button>
 
-                    {/* Pejabat Perbendaharaan — tidak langsung upload, masuk ke sub */}
                     <button onClick={() => { setImportKategori("pejabat"); setImportSubPejabat(null); setImportRows([]); setImportDone(false); }}
                       className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition-all text-left group">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-violet-100">
@@ -797,7 +921,6 @@ export default function DashboardAdmin() {
                       </div>
                     </button>
 
-                    {/* PIC / Operator */}
                     <button onClick={() => { setImportKategori("pic"); setImportSubPejabat(null); setImportRows([]); setImportDone(false); }}
                       className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left group">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-100">
@@ -828,16 +951,12 @@ export default function DashboardAdmin() {
                     </button>
                     <p className="text-sm font-semibold text-slate-700">Pilih Jabatan</p>
                   </div>
-
                   <p className="text-xs text-slate-500">Pilih jabatan yang ingin diimport datanya:</p>
-
                   <div className="grid grid-cols-1 gap-2.5">
                     {(Object.entries(SUB_PEJABAT_CONFIG) as [ImportSubPejabat, typeof SUB_PEJABAT_CONFIG[ImportSubPejabat]][]).map(([key, cfg]) => (
                       <button key={key} onClick={() => { setImportSubPejabat(key); setImportRows([]); setImportDone(false); }}
                         className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition-all text-left group">
-                        <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 text-base">
-                          {cfg.icon}
-                        </div>
+                        <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center shrink-0 text-base">{cfg.icon}</div>
                         <div>
                           <p className="text-sm font-semibold text-slate-800">{cfg.label}</p>
                           <p className="text-xs text-slate-500 mt-0.5">{cfg.desc}</p>
@@ -851,20 +970,17 @@ export default function DashboardAdmin() {
                 </>
               )}
 
-              {/* STEP 3 — Upload file (untuk kantor, pic, dan pejabat+sub) */}
+              {/* STEP 3 — Upload file */}
               {activeConfig && (
                 <>
-                  {/* Breadcrumb + back button */}
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        if (importKategori === "pejabat" && importSubPejabat) {
-                          setImportSubPejabat(null); setImportRows([]); setImportDone(false);
-                        } else {
-                          setImportKategori(null); setImportSubPejabat(null); setImportRows([]); setImportDone(false);
-                        }
-                      }}
-                      className="text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onClick={() => {
+                      if (importKategori === "pejabat" && importSubPejabat) {
+                        setImportSubPejabat(null); setImportRows([]); setImportDone(false);
+                      } else {
+                        setImportKategori(null); setImportSubPejabat(null); setImportRows([]); setImportDone(false);
+                      }
+                    }} className="text-slate-400 hover:text-slate-600 transition-colors">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                       </svg>
@@ -882,7 +998,6 @@ export default function DashboardAdmin() {
                     </div>
                   </div>
 
-                  {/* Info */}
                   <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
                     <svg className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -892,7 +1007,6 @@ export default function DashboardAdmin() {
                     </p>
                   </div>
 
-                  {/* Upload area */}
                   <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl p-5 text-center">
                     <p className="text-sm font-medium text-slate-600 mb-1">Upload file Excel</p>
                     <p className="text-xs text-slate-400 mb-3">Kolom: Kode Satker + data <strong>{activeConfig.label}</strong></p>
@@ -973,7 +1087,32 @@ export default function DashboardAdmin() {
                   )}
                 </>
               )}
-
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Konfirmasi Clear Data */}
+      {showConfirmClear && clearTarget && (
+        <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 mx-auto mb-4">
+              <svg className="w-6 h-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-bold text-slate-800 text-center">Hapus Semua Data Profil?</h3>
+            <p className="text-xs text-slate-500 text-center mt-1 leading-relaxed">
+              Semua data profil <span className="font-semibold text-slate-700">{clearTarget.nama_satker}</span> akan dikosongkan. Tindakan ini tidak bisa dibatalkan.
+            </p>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => { setShowConfirmClear(false); setClearTarget(null); }} disabled={clearing}
+                className="flex-1 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50">
+                Batal
+              </button>
+              <button onClick={handleClearData} disabled={clearing}
+                className="flex-1 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                {clearing ? "Menghapus..." : "Ya, Hapus"}
+              </button>
             </div>
           </div>
         </div>
