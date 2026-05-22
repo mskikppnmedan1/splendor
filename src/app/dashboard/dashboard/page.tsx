@@ -367,7 +367,7 @@ export default function DashboardSatker() {
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
-              <h2 className="text-sm font-semibold text-slate-700 mb-4">Pengelola Keuangan</h2>
+              <h2 className="text-sm font-semibold text-slate-700 mb-4">Pejabat Perbendaharaan</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <PejabatSummary label="KPA" nama={profil.nama_kpa} nip={profil.nip_kpa} hp={profil.hp_kpa} />
                 <PejabatSummary label="PPK 1" nama={profil.nama_ppk1} nip={profil.nip_ppk1} hp={profil.hp_ppk1} />
