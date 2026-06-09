@@ -344,6 +344,9 @@ export default function DashboardAdmin() {
   const [importDone, setImportDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  type FilterStatus = "semua" | "sudah" | "tidaklengkap" | "belum"
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>("semua");
+
   // Single batch call instead of N individual /api/satker/profil requests
   const fetchSatker = useCallback(async () => {
     setLoading(true);
@@ -609,7 +612,36 @@ export default function DashboardAdmin() {
   const skipCount = importRows.filter((r) => r.status === "skip").length;
   const errorCount = importRows.filter((r) => r.status === "error").length;
 
+  // Ada data apapun = sudah isi (minimal 1 field)
+  const hasProfil = (s: Satker) => {
+    const p = profilMap[s.id];
+    return !!(p && (p.nama_kpa || p.nama_ppk1 || p.alamat));
+  };
+
+  // Field wajib minimum = dianggap lengkap
+  // Profil kantor: alamat, no_telp, email
+  // Pejabat: KPA, PPK1, Bendahara Pengeluaran (PPSPM tidak wajib)
+  // PIC: minimal nama & HP PIC 1
+  const isLengkap = (s: Satker) => {
+    const p = profilMap[s.id];
+    if (!p) return false;
+    return !!(
+      p.alamat && p.no_telp && p.email &&
+      p.nama_kpa &&
+      p.nama_ppk1 &&
+      p.nama_bendahara_pengeluaran &&
+      p.nama_pic1 && p.hp_pic1
+    );
+  };
+
+  const countSudah   = satkerList.filter(s => hasProfil(s) && isLengkap(s)).length;
+  const countKurang  = satkerList.filter(s => hasProfil(s) && !isLengkap(s)).length;
+  const countBelum   = satkerList.filter(s => !hasProfil(s)).length;
+
   const filtered = satkerList.filter((s) => {
+    if (filterStatus === "sudah"        && !(hasProfil(s) && isLengkap(s))) return false;
+    if (filterStatus === "tidaklengkap" && !(hasProfil(s) && !isLengkap(s))) return false;
+    if (filterStatus === "belum"        && hasProfil(s)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     if (s.nama_satker?.toLowerCase().includes(q)) return true;
@@ -639,27 +671,23 @@ export default function DashboardAdmin() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="h-16 bg-white border-b border-slate-100 shadow-sm" />
-        <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
-          <div className="animate-pulse bg-slate-200 rounded h-7 w-40" />
-          <div className="animate-pulse bg-slate-200 rounded h-4 w-56" />
-          <div className="flex gap-2 mt-2">
-            <div className="animate-pulse bg-slate-200 rounded h-9 flex-1" />
-            <div className="animate-pulse bg-slate-200 rounded h-9 w-28" />
-            <div className="animate-pulse bg-slate-200 rounded h-9 w-28" />
+      <div className="min-h-screen bg-slate-100">
+        <div className="h-16 bg-white border-b border-slate-200 shadow-sm" />
+        <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-5">
+          <div className="animate-pulse bg-slate-200 rounded-lg h-8 w-48" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-white rounded-xl h-24 border border-slate-200" />)}
+          </div>          <div className="flex gap-2">
+            <div className="animate-pulse bg-slate-200 rounded-lg h-10 flex-1" />
+            <div className="animate-pulse bg-slate-200 rounded-lg h-10 w-32" />
+            <div className="animate-pulse bg-slate-200 rounded-lg h-10 w-32" />
           </div>
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-50 px-4 py-3 flex gap-8 border-b border-slate-200">
-              {["Kode", "Nama Satker", "Update Terakhir", "Aksi"].map((h) => (
-                <div key={h} className="animate-pulse bg-slate-200 rounded h-3 w-20" />
-              ))}
-            </div>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-8 px-4 py-3 border-b border-slate-100 last:border-0">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 last:border-0">
                 <div className="animate-pulse bg-slate-200 rounded h-4 w-16" />
                 <div className="animate-pulse bg-slate-200 rounded h-4 flex-1" />
-                <div className="animate-pulse bg-slate-200 rounded h-4 w-32" />
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-28" />
                 <div className="animate-pulse bg-slate-200 rounded h-7 w-16" />
               </div>
             ))}
@@ -670,83 +698,204 @@ export default function DashboardAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-100">
       <Header nama="Sarana Penyelesaian Dokumen Organisasi" sub="KPPN Medan I" userLabel="Administrator" userRole="KPPN" onLogout={handleLogout} navItems={NAV_ITEMS} />
 
-      <div className="p-4 md:p-6 max-w-6xl mx-auto">
-        <h1 className="text-lg md:text-xl font-bold text-slate-800">Data Satker</h1>
-        <p className="text-sm text-slate-500 mt-1">Daftar data profil satuan kerja</p>
-
-        <div className="mt-4 md:mt-6 flex flex-wrap items-center gap-2 md:gap-3">
-          <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama satker, kode, atau nama pejabat..."
-              className="w-full pl-9 pr-4 py-2 text-sm text-slate-900 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all bg-white" />
+      {/* ── Page header ── */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">Data Satker</h1>
+            <p className="text-sm text-slate-500 mt-0.5">Daftar profil satuan kerja yang terdaftar</p>
           </div>
-          {search && <button onClick={() => setSearch("")} className="text-xs text-slate-500 hover:text-slate-700 shrink-0">Reset</button>}
-          <p className="text-xs text-slate-500 shrink-0">
-            {filtered.length} ditemukan
-            {profilLoading && !loading && <span className="ml-1 text-slate-300">(memuat profil...)</span>}
-          </p>
-          <button onClick={openImport}
-            className="shrink-0 px-3 py-2 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 text-slate-600 text-xs rounded-lg transition-colors flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Import Excel
+          <div className="flex items-center gap-2">
+            <button onClick={openImport}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 text-slate-600 text-sm rounded-lg transition-colors font-medium">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Import
+            </button>
+            <button onClick={() => handleExport()} disabled={exporting || loading}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {exporting ? "Mengekspor..." : "Export Excel"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-5">
+
+        {/* ── Stats cards — klik untuk filter ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Total */}
+          <button
+            onClick={() => setFilterStatus("semua")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${
+              filterStatus === "semua"
+                ? "border-blue-400 ring-2 ring-blue-100"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <p className="text-xs text-slate-500 mb-1">Total Satker</p>
+            <p className="text-2xl font-bold text-slate-800">{satkerList.length}</p>
+            {filterStatus === "semua" && <p className="text-xs text-blue-500 mt-1 font-medium">Semua ditampilkan</p>}
           </button>
-          <button onClick={() => handleExport()} disabled={exporting || loading}
-            className="shrink-0 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs rounded-lg transition-colors disabled:opacity-50">
-            {exporting ? "Mengekspor..." : "↓ Export Excel"}
+
+          {/* Lengkap */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === "sudah" ? "semua" : "sudah")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${
+              filterStatus === "sudah"
+                ? "border-emerald-400 ring-2 ring-emerald-100"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-400" />
+              <p className="text-xs text-slate-500">Lengkap</p>
+            </div>
+            <p className="text-2xl font-bold text-emerald-600">{countSudah}</p>
+            {filterStatus === "sudah" && <p className="text-xs text-emerald-500 mt-1 font-medium">Filter aktif</p>}
+          </button>
+
+          {/* Tidak lengkap */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === "tidaklengkap" ? "semua" : "tidaklengkap")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${
+              filterStatus === "tidaklengkap"
+                ? "border-orange-400 ring-2 ring-orange-100"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-2 h-2 rounded-full bg-orange-400" />
+              <p className="text-xs text-slate-500">Tidak Lengkap</p>
+            </div>
+            <p className="text-2xl font-bold text-orange-500">{countKurang}</p>
+            {filterStatus === "tidaklengkap" && <p className="text-xs text-orange-500 mt-1 font-medium">Filter aktif</p>}
+          </button>
+
+          {/* Belum isi */}
+          <button
+            onClick={() => setFilterStatus(filterStatus === "belum" ? "semua" : "belum")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${
+              filterStatus === "belum"
+                ? "border-red-400 ring-2 ring-red-100"
+                : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="w-2 h-2 rounded-full bg-slate-300" />
+              <p className="text-xs text-slate-500">Belum Isi</p>
+            </div>
+            <p className="text-2xl font-bold text-red-500">{countBelum}</p>
+            {filterStatus === "belum" && <p className="text-xs text-red-500 mt-1 font-medium">Filter aktif</p>}
           </button>
         </div>
 
-        {/* Table desktop */}
-        <div className="mt-3 bg-white rounded-xl border border-slate-200 overflow-hidden hidden md:block">
-          {loading ? <div className="p-8 text-center text-sm text-slate-500">Memuat data...</div>
-            : filtered.length === 0 ? <div className="p-8 text-center text-sm text-slate-500">{search ? `Tidak ada satker dengan kata kunci "${search}"` : "Belum ada satker aktif"}</div>
-            : (
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Kode Satker</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Nama Satker</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Update Terakhir</th>
-                    <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filtered.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 text-slate-600">{s.kode_satker || "-"}</td>
-                      <td className="px-4 py-3 text-slate-800 font-medium">{s.nama_satker || "-"}</td>
-                      <td className="px-4 py-3 text-slate-500 text-xs" suppressHydrationWarning>
-                        {s.updated_at ? new Date(s.updated_at).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : <span className="text-slate-300 italic">Belum diisi</span>}
+        {/* ── Search bar ── */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari nama satker, kode, atau nama pejabat..."
+              className="w-full pl-9 pr-4 py-2.5 text-sm text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+            />
+          </div>
+          {search && (
+            <button onClick={() => setSearch("")} className="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors">
+              Reset
+            </button>
+          )}
+          <p className="text-xs text-slate-400 shrink-0">{filtered.length} satker</p>
+        </div>
+
+        {/* ── Table desktop ── */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hidden md:block shadow-sm">
+          {filtered.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Search className="w-5 h-5 text-slate-400" />
+              </div>
+              <p className="text-sm font-medium text-slate-500">
+                {search ? `Tidak ada satker dengan kata kunci "${search}"` : "Belum ada satker aktif"}
+              </p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">No</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Kode</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama Satker</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Update Terakhir</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filtered.map((s, idx) => {
+                  const hp = hasProfil(s);
+                  const lp = isLengkap(s);
+                  return (
+                    <tr key={s.id} className="hover:bg-blue-50/40 transition-colors group">
+                      <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
+                      <td className="px-5 py-3.5 font-mono text-xs text-slate-500">{s.kode_satker || "-"}</td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${lp ? "bg-emerald-400" : hp ? "bg-orange-400" : "bg-slate-300"}`} />
+                          <span className="font-medium text-slate-800">{s.nama_satker || "-"}</span>
+                        </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => openDetail(s)} className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors">Detail</button>
+                      <td className="px-5 py-3.5 text-slate-400 text-xs" suppressHydrationWarning>
+                        {s.updated_at
+                          ? new Date(s.updated_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                          : <span className="italic">Belum diisi</span>}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <button
+                          onClick={() => openDetail(s)}
+                          className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100">
+                          Detail
+                        </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {/* Card mobile */}
-        <div className="mt-3 space-y-2 md:hidden">
-          {loading ? <div className="p-8 text-center text-sm text-slate-500">Memuat data...</div>
-            : filtered.length === 0 ? <div className="p-8 text-center text-sm text-slate-500">{search ? `Tidak ada satker` : "Belum ada satker aktif"}</div>
-            : filtered.map((s) => (
+        {/* ── Card mobile ── */}
+        <div className="space-y-2 md:hidden">
+          {filtered.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+              {search ? `Tidak ada satker "${search}"` : "Belum ada satker aktif"}
+            </div>
+          ) : filtered.map((s) => {
+            const hp = hasProfil(s);
+            const lp = isLengkap(s);
+            return (
               <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
-                <p className="text-xs text-slate-500 mt-1">Kode Satker: {s.kode_satker || "-"}</p>
-                <p className="text-xs text-slate-400 mt-0.5" suppressHydrationWarning>{new Date(s.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
-                <div className="mt-3">
-                  <button onClick={() => openDetail(s)} className="w-full py-1.5 text-xs text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors">Detail</button>
+                <div className="flex items-start gap-2.5">
+                  <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${lp ? "bg-emerald-400" : hp ? "bg-orange-400" : "bg-slate-300"}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Kode: {s.kode_satker || "-"}</p>
+                  </div>
                 </div>
+                <button onClick={() => openDetail(s)} className="mt-3 w-full py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100">
+                  Lihat Detail
+                </button>
               </div>
-            ))}
+            );
+          })}
         </div>
       </div>
 
