@@ -139,6 +139,11 @@ const PejabatSummary = ({ label, nama, nip, hp }: { label: string; nama?: string
 
 type FormErrors = Partial<Record<keyof ProfilSatker, string>>
 
+function validateForm(_form: ProfilSatker, _namaSatker: string): FormErrors {
+  // Tidak ada field yang diwajibkan — semua opsional
+  return {}
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function DashboardSatker() {

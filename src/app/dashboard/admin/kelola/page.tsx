@@ -264,17 +264,20 @@ export default function KelolaUser() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="h-16 bg-white border-b border-slate-100 shadow-sm" />
-        <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
-          <div className="animate-pulse bg-slate-200 rounded h-7 w-40" />
-          <div className="animate-pulse bg-slate-200 rounded h-4 w-64" />
+      <div className="min-h-screen bg-slate-100">
+        <div className="h-16 bg-white border-b border-slate-200 shadow-sm" />
+        <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-5">
+          <div className="animate-pulse bg-slate-200 rounded-lg h-8 w-40" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => <div key={i} className="animate-pulse bg-white rounded-xl h-24 border border-slate-200" />)}
+          </div>
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-slate-100 last:border-0">
-                <div className="animate-pulse bg-slate-200 rounded h-4 w-24" />
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-slate-100 last:border-0">
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-16" />
                 <div className="animate-pulse bg-slate-200 rounded h-4 flex-1" />
-                <div className="animate-pulse bg-slate-200 rounded h-7 w-28" />
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-24" />
+                <div className="animate-pulse bg-slate-200 rounded h-7 w-32" />
               </div>
             ))}
           </div>
@@ -284,9 +287,9 @@ export default function KelolaUser() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-100">
       <Header
-        nama="Sistem Informasi Satuan Kerja"
+        nama="Sarana Penyelesaian Dokumen Organisasi"
         sub="KPPN Medan I"
         userLabel="Administrator"
         userRole="KPPN"
@@ -294,12 +297,61 @@ export default function KelolaUser() {
         navItems={NAV_ITEMS}
       />
 
-      <div className="p-4 md:p-6 max-w-6xl mx-auto">
-        <h1 className="text-lg md:text-xl font-bold text-slate-800">Kelola User</h1>
-        <p className="text-sm text-slate-500 mt-1">Tambah, reset password, atau hapus akun satker</p>
+      {/* ── Page header ── */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">Kelola User</h1>
+            <p className="text-sm text-slate-500 mt-0.5">Tambah, reset password, atau hapus akun satker</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => openModal("import")}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 text-slate-600 text-sm font-medium rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Upload Excel
+            </button>
+            <button
+              onClick={() => openModal("tambah")}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Tambah Satker
+            </button>
+          </div>
+        </div>
+      </div>
 
-        <div className="mt-4 md:mt-6 flex flex-wrap items-center gap-2 md:gap-3">
-          <div className="relative flex-1 min-w-0">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-5">
+
+        {/* ── Stats cards ── */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <p className="text-xs text-slate-500 mb-1">Total Satker</p>
+            <p className="text-2xl font-bold text-slate-800">{satkerList.length}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <p className="text-xs text-slate-500 mb-1">Sudah Update Password</p>
+            <p className="text-2xl font-bold text-emerald-600">
+              {satkerList.filter(s => s.password_updated_at).length}
+            </p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4 col-span-2 md:col-span-1">
+            <p className="text-xs text-slate-500 mb-1">Belum Update Password</p>
+            <p className="text-2xl font-bold text-amber-500">
+              {satkerList.filter(s => !s.password_updated_at).length}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Search bar ── */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
@@ -307,79 +359,67 @@ export default function KelolaUser() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama atau kode satker..."
-              className="w-full pl-9 pr-4 py-2 text-sm text-slate-900 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all bg-white"
+              className="w-full pl-9 pr-4 py-2.5 text-sm text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
             />
           </div>
           {search && (
-            <button onClick={() => setSearch("")} className="text-xs text-slate-500 hover:text-slate-700 shrink-0">
+            <button onClick={() => setSearch("")} className="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors">
               Reset
             </button>
           )}
-          <p className="text-xs text-slate-500 shrink-0">{filtered.length} ditemukan</p>
-          <button
-            onClick={() => openModal("import")}
-            className="shrink-0 px-3 py-2 bg-white border border-slate-200 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 text-slate-600 text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Upload Excel
-          </button>
-          <button
-            onClick={() => openModal("tambah")}
-            className="shrink-0 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
-          >
-            + Tambah
-          </button>
+          <p className="text-xs text-slate-400 shrink-0">{filtered.length} satker</p>
         </div>
 
-        {/* Table — desktop */}
-        <div className="mt-4 md:mt-6 bg-white rounded-xl border border-slate-200 overflow-hidden hidden md:block">
-          {loading ? (
-            <div className="p-8 text-center text-sm text-slate-500">Memuat data...</div>
-          ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500">
-              {search ? `Tidak ada satker dengan kata kunci "${search}"` : "Belum ada satker"}
+        {/* ── Table desktop ── */}
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden hidden md:block shadow-sm">
+          {filtered.length === 0 ? (
+            <div className="py-16 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                {search ? `Tidak ada satker "${search}"` : "Belum ada satker"}
+              </p>
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Kode Satker</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Nama Satker</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Update Password</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500">Aksi</th>
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">No</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Kode</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Nama Satker</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Update Password</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-600 font-mono text-xs">{s.kode_satker || "-"}</td>
-                    <td className="px-4 py-3 text-slate-800 font-medium">{s.nama_satker || "-"}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">
+                {filtered.map((s, idx) => (
+                  <tr key={s.id} className="hover:bg-blue-50/40 transition-colors">
+                    <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
+                    <td className="px-5 py-3.5 font-mono text-xs text-slate-500">{s.kode_satker || "-"}</td>
+                    <td className="px-5 py-3.5 font-medium text-slate-800">{s.nama_satker || "-"}</td>
+                    <td className="px-5 py-3.5 text-xs" suppressHydrationWarning>
                       {s.password_updated_at ? (
-                        new Date(s.password_updated_at).toLocaleString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                        <span className="text-slate-500">
+                          {new Date(s.password_updated_at).toLocaleString("id-ID", {
+                            day: "numeric", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit",
+                          })}
+                        </span>
                       ) : (
-                        <span className="text-slate-300 italic">-</span>
+                        <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full text-xs font-medium">
+                          Belum diubah
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => openModal("reset-password", s)}
-                          className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-200"
+                          className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
                         >
                           Reset Password
                         </button>
                         <button
                           onClick={() => openModal("hapus", s)}
-                          className="px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
+                          className="px-3 py-1.5 text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
                         >
                           Hapus
                         </button>
@@ -392,43 +432,41 @@ export default function KelolaUser() {
           )}
         </div>
 
-        {/* Card list — mobile */}
-        <div className="mt-4 space-y-2 md:hidden">
-          {loading ? (
-            <div className="p-8 text-center text-sm text-slate-500">Memuat data...</div>
-          ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500">
-              {search ? `Tidak ada satker dengan kata kunci "${search}"` : "Belum ada satker"}
+        {/* ── Card mobile ── */}
+        <div className="space-y-2 md:hidden">
+          {filtered.length === 0 ? (
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+              {search ? `Tidak ada satker "${search}"` : "Belum ada satker"}
             </div>
-          ) : (
-            filtered.map((s) => (
-              <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
-                <p className="text-xs text-slate-500 mt-1">Kode: {s.kode_satker || "-"}</p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {new Date(s.created_at).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-                <div className="mt-3 inline-flex w-full rounded-lg border border-slate-200 overflow-hidden">
-                  <button
-                    onClick={() => openModal("reset-password", s)}
-                    className="flex-1 py-1.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors border-r border-slate-200"
-                  >
-                    Reset Password
-                  </button>
-                  <button
-                    onClick={() => openModal("hapus", s)}
-                    className="flex-1 py-1.5 text-xs text-red-500 hover:bg-red-50 transition-colors"
-                  >
-                    Hapus
-                  </button>
+          ) : filtered.map((s) => (
+            <div key={s.id} className="bg-white rounded-xl border border-slate-200 p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800 break-words">{s.nama_satker || "-"}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 font-mono">{s.kode_satker || "-"}</p>
                 </div>
+                {!s.password_updated_at && (
+                  <span className="shrink-0 text-xs text-amber-600 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full font-medium">
+                    Belum diubah
+                  </span>
+                )}
               </div>
-            ))
-          )}
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => openModal("reset-password", s)}
+                  className="flex-1 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
+                >
+                  Reset Password
+                </button>
+                <button
+                  onClick={() => openModal("hapus", s)}
+                  className="flex-1 py-1.5 text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -465,6 +503,7 @@ export default function KelolaUser() {
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">Nama Satker</label>
                     <input
+                      autoComplete="off"
                       value={formNama}
                       onChange={(e) => setFormNama(e.target.value)}
                       placeholder="Nama instansi/satker"
@@ -476,6 +515,7 @@ export default function KelolaUser() {
                       Kode Satker <span className="text-slate-400">(digunakan sebagai username)</span>
                     </label>
                     <input
+                      autoComplete="off"
                       value={formKode}
                       onChange={(e) => setFormKode(e.target.value)}
                       placeholder="Contoh: 019364"
@@ -486,6 +526,7 @@ export default function KelolaUser() {
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">Password</label>
                     <input
                       type="password"
+                      autoComplete="new-password"
                       value={formPassword}
                       onChange={(e) => setFormPassword(e.target.value)}
                       placeholder="Minimal 6 karakter"
@@ -514,6 +555,7 @@ export default function KelolaUser() {
                     <label className="block text-xs font-medium text-slate-600 mb-1.5">Password Baru</label>
                     <input
                       type="password"
+                      autoComplete="new-password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimal 6 karakter"
@@ -693,7 +735,7 @@ export default function KelolaUser() {
                         <div className="text-center">
                           <p className="text-sm text-green-600 font-medium mb-3">
                             ✓ Selesai! {successCount} data diproses ({pendingCount > 0 ? `${pendingCount} baru` : ""}{pendingCount > 0 && updateCount > 0 ? ", " : ""}{updateCount > 0 ? `${updateCount} nama diperbarui` : ""}).
-          	              </p>
+                          </p>
                           <button
                             onClick={closeModal}
                             className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition-colors"
