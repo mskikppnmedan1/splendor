@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Header from "@/components/header";
 import { Search } from "lucide-react";
-import * as XLSX from "xlsx";
+// XLSX is dynamically imported below to avoid loading ~1MB bundle upfront
 
 type Satker = {
   id: string;
@@ -344,28 +344,32 @@ export default function DashboardAdmin() {
   const [importDone, setImportDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchSatker = async () => {
+  // Single batch call instead of N individual /api/satker/profil requests
+  const fetchSatker = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/satker/list");
-    const data = await res.json();
-    const list: Satker[] = (data.list || []).filter((s: Satker) => s.status === "aktif");
+    const [listRes, batchRes] = await Promise.all([
+      fetch("/api/satker/list"),
+      fetch("/api/satker/profil-batch"),
+    ]);
+
+    const listData = await listRes.json();
+    const list: Satker[] = (listData.list || []).filter((s: Satker) => s.status === "aktif");
     setSatkerList(list);
     setLoading(false);
 
-    setProfilLoading(true);
-    const entries = await Promise.all(
-      list.map(async (s) => {
-        const res = await fetch(`/api/satker/profil?id=${s.id}`);
-        if (!res.ok) return [s.id, { ...emptyProfil }] as const;
-        const d = await res.json();
-        return [s.id, { ...emptyProfil, ...sanitizeProfil(d.profil || {}) }] as const;
-      })
-    );
-    setProfilMap(Object.fromEntries(entries));
+    if (batchRes.ok) {
+      const batchData = await batchRes.json();
+      const rawMap: Record<string, unknown> = batchData.profilMap || {};
+      const sanitized: Record<string, ProfilSatker> = {};
+      for (const id of Object.keys(rawMap)) {
+        sanitized[id] = { ...emptyProfil, ...sanitizeProfil(rawMap[id] as Partial<ProfilSatker>) };
+      }
+      setProfilMap(sanitized);
+    }
     setProfilLoading(false);
-  };
+  }, []);
 
-  useEffect(() => { fetchSatker(); }, []);
+  useEffect(() => { fetchSatker(); }, [fetchSatker]);
 
   const handleLogout = async () => {
     await fetch("/api/auth", { method: "DELETE" });
@@ -444,7 +448,8 @@ export default function DashboardAdmin() {
   };
 
 
-  const handleExportTemplate = (colsFilter: string[]) => {
+  const handleExportTemplate = async (colsFilter: string[]) => {
+    const XLSX = await import("xlsx");
     const rows = satkerList.map((s) => {
       const row: Record<string, any> = {};
       colsFilter.forEach(k => {
@@ -463,10 +468,14 @@ export default function DashboardAdmin() {
 
   const handleExport = async (colsFilter?: string[]) => {
     setExporting(true);
+    // Use already-cached profilMap; only fetch missing entries
     const rows = await Promise.all(satkerList.map(async (s) => {
-      const res = await fetch(`/api/satker/profil?id=${s.id}`);
-      const data = res.ok ? await res.json() : {};
-      const p: ProfilSatker = { ...emptyProfil, ...sanitizeProfil(data.profil || {}) };
+      let p: ProfilSatker = profilMap[s.id] ?? { ...emptyProfil };
+      if (!profilMap[s.id]) {
+        const res = await fetch(`/api/satker/profil?id=${s.id}`);
+        const data = res.ok ? await res.json() : {};
+        p = { ...emptyProfil, ...sanitizeProfil(data.profil || {}) };
+      }
       const full: Record<string, any> = {
         "Nama Satker": s.nama_satker, "Kode Satker": s.kode_satker,
         "Tanggal Daftar": new Date(s.created_at).toLocaleDateString("id-ID"),
@@ -493,6 +502,7 @@ export default function DashboardAdmin() {
       }
       return full;
     }));
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Data Satker");
@@ -527,7 +537,8 @@ export default function DashboardAdmin() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
+      const XLSX = await import("xlsx");
       const data = evt.target?.result;
       const wb = XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
@@ -625,6 +636,38 @@ export default function DashboardAdmin() {
     if (importKategori === "pejabat") return "Pejabat Perbendaharaan";
     return IMPORT_KATEGORI_CONFIG[importKategori].label;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="h-16 bg-white border-b border-slate-100 shadow-sm" />
+        <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
+          <div className="animate-pulse bg-slate-200 rounded h-7 w-40" />
+          <div className="animate-pulse bg-slate-200 rounded h-4 w-56" />
+          <div className="flex gap-2 mt-2">
+            <div className="animate-pulse bg-slate-200 rounded h-9 flex-1" />
+            <div className="animate-pulse bg-slate-200 rounded h-9 w-28" />
+            <div className="animate-pulse bg-slate-200 rounded h-9 w-28" />
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-slate-50 px-4 py-3 flex gap-8 border-b border-slate-200">
+              {["Kode", "Nama Satker", "Update Terakhir", "Aksi"].map((h) => (
+                <div key={h} className="animate-pulse bg-slate-200 rounded h-3 w-20" />
+              ))}
+            </div>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-8 px-4 py-3 border-b border-slate-100 last:border-0">
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-16" />
+                <div className="animate-pulse bg-slate-200 rounded h-4 flex-1" />
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-32" />
+                <div className="animate-pulse bg-slate-200 rounded h-7 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">

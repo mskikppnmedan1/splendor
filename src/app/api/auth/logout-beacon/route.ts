@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { COOKIE_KPPN, COOKIE_SATKER } from '@/lib/session'
 
 // Endpoint khusus untuk sendBeacon saat tab/browser ditutup
-export async function POST(req: NextRequest) {
-  const cookieStore = await cookies();
-  cookieStore.delete("kppn_token");
-  cookieStore.delete("satker_token");
-  return new NextResponse(null, { status: 204 });
+export async function POST() {
+  const cookieStore = await cookies()
+  cookieStore.delete(COOKIE_KPPN)
+  cookieStore.delete(COOKIE_SATKER)
+  return new NextResponse(null, { status: 204 })
 }
