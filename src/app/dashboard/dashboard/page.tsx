@@ -4,120 +4,86 @@ import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import ModalAkun from "@/components/modal-akun";
 
+// ── Types ────────────────────────────────────────────────────────────────────
+
 type ProfilSatker = {
-  alamat: string;
-  no_telp: string;
-  email: string;
-  nama_kpa: string;
-  nip_kpa: string;
-  hp_kpa: string;
-  nama_ppk1: string;
-  nip_ppk1: string;
-  hp_ppk1: string;
-  nama_ppk2: string;
-  nip_ppk2: string;
-  hp_ppk2: string;
-  nama_ppk3: string;
-  nip_ppk3: string;
-  hp_ppk3: string;
-  nama_ppk4: string;
-  nip_ppk4: string;
-  hp_ppk4: string;
-  nama_ppspm: string;
-  nip_ppspm: string;
-  hp_ppspm: string;
-  nama_bendahara: string;
-  nip_bendahara: string;
-  hp_bendahara: string;
-  nama_bendahara_pengeluaran: string;
-  nip_bendahara_pengeluaran: string;
-  hp_bendahara_pengeluaran: string;
-  nama_bendahara_penerimaan: string;
-  nip_bendahara_penerimaan: string;
-  hp_bendahara_penerimaan: string;
-  nama_bendahara_pembantu: string;
-  nip_bendahara_pembantu: string;
-  hp_bendahara_pembantu: string;
-  nama_pic1: string;
-  hp_pic1: string;
-  nama_pic2: string;
-  hp_pic2: string;
-  nama_pic3: string;
-  hp_pic3: string;
-  nama_pic4: string;
-  hp_pic4: string;
+  alamat: string; no_telp: string; email: string;
+  nama_kpa: string; nip_kpa: string; hp_kpa: string;
+  nama_ppk1: string; nip_ppk1: string; hp_ppk1: string;
+  nama_ppk2: string; nip_ppk2: string; hp_ppk2: string;
+  nama_ppk3: string; nip_ppk3: string; hp_ppk3: string;
+  nama_ppk4: string; nip_ppk4: string; hp_ppk4: string;
+  nama_ppspm: string; nip_ppspm: string; hp_ppspm: string;
+  nama_bendahara: string; nip_bendahara: string; hp_bendahara: string;
+  nama_bendahara_pengeluaran: string; nip_bendahara_pengeluaran: string; hp_bendahara_pengeluaran: string;
+  nama_bendahara_penerimaan: string; nip_bendahara_penerimaan: string; hp_bendahara_penerimaan: string;
+  nama_bendahara_pembantu: string; nip_bendahara_pembantu: string; hp_bendahara_pembantu: string;
+  nama_pic1: string; hp_pic1: string;
+  nama_pic2: string; hp_pic2: string;
+  nama_pic3: string; hp_pic3: string;
+  nama_pic4: string; hp_pic4: string;
 };
 
 const empty: ProfilSatker = {
-  alamat: "",
-  no_telp: "",
-  email: "",
-  nama_kpa: "",
-  nip_kpa: "",
-  hp_kpa: "",
-  nama_ppk1: "",
-  nip_ppk1: "",
-  hp_ppk1: "",
-  nama_ppk2: "",
-  nip_ppk2: "",
-  hp_ppk2: "",
-  nama_ppk3: "",
-  nip_ppk3: "",
-  hp_ppk3: "",
-  nama_ppk4: "",
-  nip_ppk4: "",
-  hp_ppk4: "",
-  nama_ppspm: "",
-  nip_ppspm: "",
-  hp_ppspm: "",
-  nama_bendahara: "",
-  nip_bendahara: "",
-  hp_bendahara: "",
-  nama_bendahara_pengeluaran: "",
-  nip_bendahara_pengeluaran: "",
-  hp_bendahara_pengeluaran: "",
-  nama_bendahara_penerimaan: "",
-  nip_bendahara_penerimaan: "",
-  hp_bendahara_penerimaan: "",
-  nama_bendahara_pembantu: "",
-  nip_bendahara_pembantu: "",
-  hp_bendahara_pembantu: "",
-  nama_pic1: "",
-  hp_pic1: "",
-  nama_pic2: "",
-  hp_pic2: "",
-  nama_pic3: "",
-  hp_pic3: "",
-  nama_pic4: "",
-  hp_pic4: "",
+  alamat: "", no_telp: "", email: "",
+  nama_kpa: "", nip_kpa: "", hp_kpa: "",
+  nama_ppk1: "", nip_ppk1: "", hp_ppk1: "",
+  nama_ppk2: "", nip_ppk2: "", hp_ppk2: "",
+  nama_ppk3: "", nip_ppk3: "", hp_ppk3: "",
+  nama_ppk4: "", nip_ppk4: "", hp_ppk4: "",
+  nama_ppspm: "", nip_ppspm: "", hp_ppspm: "",
+  nama_bendahara: "", nip_bendahara: "", hp_bendahara: "",
+  nama_bendahara_pengeluaran: "", nip_bendahara_pengeluaran: "", hp_bendahara_pengeluaran: "",
+  nama_bendahara_penerimaan: "", nip_bendahara_penerimaan: "", hp_bendahara_penerimaan: "",
+  nama_bendahara_pembantu: "", nip_bendahara_pembantu: "", hp_bendahara_pembantu: "",
+  nama_pic1: "", hp_pic1: "",
+  nama_pic2: "", hp_pic2: "",
+  nama_pic3: "", hp_pic3: "",
+  nama_pic4: "", hp_pic4: "",
 };
 
+// ── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-slate-200 rounded ${className ?? ""}`} />
+}
+
+function CardSkeleton() {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5 space-y-3">
+      <Skeleton className="h-4 w-32" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="space-y-1.5">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 const inputCls =
-  "mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all";
 
 const Field = ({ label, value }: { label: string; value: string }) => (
   <div>
-    <p className="text-xs text-slate-700">{label}</p>
+    <p className="text-xs text-slate-500">{label}</p>
     <p className="text-sm text-slate-800 font-semibold mt-0.5 break-words">
-      {value || <span className="text-slate-700 font-normal">Belum diisi</span>}
+      {value || <span className="text-slate-400 font-normal italic">Belum diisi</span>}
     </p>
   </div>
 );
 
 const Input = ({
-  label,
-  field,
-  required,
-  type,
-  form,
-  setForm,
+  label, field, required, type, form, setForm, error,
 }: {
-  label: string;
-  field: keyof ProfilSatker;
-  required?: boolean;
-  type?: string;
-  form: ProfilSatker;
-  setForm: React.Dispatch<React.SetStateAction<ProfilSatker>>;
+  label: string; field: keyof ProfilSatker; required?: boolean;
+  type?: string; form: ProfilSatker; setForm: React.Dispatch<React.SetStateAction<ProfilSatker>>;
+  error?: string;
 }) => (
   <div>
     <label className="text-xs font-medium text-slate-600">
@@ -128,54 +94,73 @@ const Input = ({
       type={type || "text"}
       value={form[field]}
       onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
-      className={inputCls}
+      className={`${inputCls} ${error ? "border-red-300 focus:ring-red-300" : ""}`}
     />
+    {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>
 );
 
 const PejabatGroup = ({
-  label,
-  namaField,
-  nipField,
-  hpField,
-  required,
-  form,
-  setForm,
+  label, namaField, nipField, hpField, required, form, setForm, errors,
 }: {
-  label: string;
-  namaField: keyof ProfilSatker;
-  nipField: keyof ProfilSatker;
-  hpField: keyof ProfilSatker;
-  required?: boolean;
-  form: ProfilSatker;
-  setForm: React.Dispatch<React.SetStateAction<ProfilSatker>>;
+  label: string; namaField: keyof ProfilSatker; nipField: keyof ProfilSatker;
+  hpField: keyof ProfilSatker; required?: boolean;
+  form: ProfilSatker; setForm: React.Dispatch<React.SetStateAction<ProfilSatker>>;
+  errors?: Record<string, string>;
 }) => (
   <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3 py-4 border-b border-slate-100 last:border-0 last:pb-0 first:pt-0">
     <div className="sm:col-span-3">
       <p className="text-xs font-semibold text-slate-700">
-        {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
+        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
       </p>
     </div>
-    <Input label="Nama" field={namaField} required={required} form={form} setForm={setForm} />
+    <Input label="Nama" field={namaField} required={required} form={form} setForm={setForm} error={errors?.[namaField]} />
     <Input label="NIP/NRP" field={nipField} form={form} setForm={setForm} />
     <Input label="No. HP" field={hpField} type="tel" form={form} setForm={setForm} />
   </div>
 );
 
+const PejabatSummary = ({ label, nama, nip, hp }: { label: string; nama?: string; nip?: string; hp?: string }) => (
+  <div>
+    <p className="text-xs text-slate-500">{label}</p>
+    {nama ? (
+      <div className="mt-0.5">
+        <p className="text-sm text-slate-800 font-semibold">{nama}</p>
+        {nip && <p className="text-xs text-slate-500 mt-0.5"><span className="text-slate-400">NIP</span> {nip}</p>}
+        {hp && <p className="text-xs text-slate-500 mt-0.5"><span className="text-slate-400">HP</span> {hp}</p>}
+      </div>
+    ) : (
+      <p className="text-sm text-slate-400 font-normal italic mt-0.5">Belum diisi</p>
+    )}
+  </div>
+);
+
+// ── Validation ────────────────────────────────────────────────────────────────
+
+type FormErrors = Partial<Record<keyof ProfilSatker, string>>
+
+function validateForm(_form: ProfilSatker, _namaSatker: string): FormErrors {
+  // Tidak ada field yang diwajibkan — semua opsional
+  return {}
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function DashboardSatker() {
   const [sessionUser, setSessionUser] = useState<{ id: string; username: string; nama: string } | null>(null);
   const [satker, setSatker] = useState<{ nama_satker: string; kode_satker: string; status: string } | null>(null);
   const [namaSatker, setNamaSatker] = useState("");
+  const [namaSatkerError, setNamaSatkerError] = useState("");
   const [profil, setProfil] = useState<ProfilSatker>(empty);
   const [showForm, setShowForm] = useState(false);
   const [showModalAkun, setShowModalAkun] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [form, setForm] = useState<ProfilSatker>(empty);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saveMsg, setSaveMsg] = useState("");
+  const [saveMsg, setSaveMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -207,7 +192,10 @@ export default function DashboardSatker() {
   }, []);
 
   const handleSave = async () => {
+    setFormErrors({});
+    setNamaSatkerError("");
     setSaving(true);
+    setSaveMsg(null);
     const res = await fetch("/api/satker/user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -217,10 +205,12 @@ export default function DashboardSatker() {
       setProfil(form);
       setSatker((s) => (s ? { ...s, nama_satker: namaSatker } : s));
       setShowForm(false);
-      setSaveMsg("Data berhasil disimpan!");
-      setTimeout(() => setSaveMsg(""), 3000);
+      setFormErrors({});
+      setSaveMsg({ type: "success", text: "Data berhasil disimpan!" });
+      setTimeout(() => setSaveMsg(null), 4000);
     } else {
-      setSaveMsg("Gagal menyimpan data.");
+      const data = await res.json();
+      setSaveMsg({ type: "error", text: data.error || "Gagal menyimpan data." });
     }
     setSaving(false);
   };
@@ -236,10 +226,10 @@ export default function DashboardSatker() {
       setProfil(empty);
       setForm(empty);
       setShowConfirmClear(false);
-      setSaveMsg("Data profil berhasil dihapus.");
-      setTimeout(() => setSaveMsg(""), 3000);
+      setSaveMsg({ type: "success", text: "Data profil berhasil dihapus." });
+      setTimeout(() => setSaveMsg(null), 4000);
     } else {
-      setSaveMsg("Gagal menghapus data.");
+      setSaveMsg({ type: "error", text: "Gagal menghapus data." });
     }
     setClearing(false);
   };
@@ -250,52 +240,25 @@ export default function DashboardSatker() {
   };
 
   const isProfilLengkap =
-    profil.nama_kpa &&
-    profil.nama_ppk1 &&
-    profil.nama_ppspm &&
-    profil.nama_bendahara_pengeluaran &&
-    profil.nama_pic1 &&
-    profil.nama_pic2;
+    profil.nama_kpa && profil.nama_ppk1 && profil.nama_ppspm &&
+    profil.nama_bendahara_pengeluaran && profil.nama_pic1 && profil.nama_pic2;
 
-  const PejabatSummary = ({
-    label,
-    nama,
-    nip,
-    hp,
-  }: {
-    label: string;
-    nama?: string;
-    nip?: string;
-    hp?: string;
-  }) => (
-    <div>
-      <p className="text-xs text-slate-700">{label}</p>
-      {nama ? (
-        <div className="mt-0.5">
-          <p className="text-sm text-slate-800 font-semibold">{nama}</p>
-          {nip && (
-            <p className="text-xs text-slate-700 mt-0.5">
-              <span className="text-slate-700">NIP</span> {nip}
-            </p>
-          )}
-          {hp && (
-            <p className="text-xs text-slate-700 mt-0.5">
-              <span className="text-slate-700">No. HP</span> {hp}
-            </p>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-slate-700 font-normal mt-0.5">Belum diisi</p>
-      )}
-    </div>
-  );
-
-  if (loading)
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-slate-700">
-        Memuat...
+      <div className="min-h-screen bg-slate-50">
+        <div className="h-16 bg-white border-b border-slate-100 shadow-sm" />
+        <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            <Skeleton className="h-20 rounded-xl" />
+          </div>
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -306,8 +269,7 @@ export default function DashboardSatker() {
         extraButton={
           <button
             onClick={() => setShowModalAkun(true)}
-            className="w-full md:w-auto px-4 py-2 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-600 text-sm font-medium rounded-lg transition-colors"
-          >
+            className="w-full md:w-auto px-4 py-2 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-600 text-sm font-medium rounded-lg transition-colors">
             Pengaturan Akun
           </button>
         }
@@ -317,40 +279,40 @@ export default function DashboardSatker() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-slate-800">Dashboard Satker</h1>
-            <p className="text-sm text-slate-700 mt-1">Kelola data profil satuan kerja Anda</p>
+            <p className="text-sm text-slate-500 mt-1">Kelola data profil satuan kerja Anda</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setShowConfirmClear(true)}
-              className="px-3 md:px-4 py-2 border border-red-200 hover:bg-red-50 text-red-500 text-sm rounded-lg transition-colors"
-            >
-              Clear Data
-            </button>
-            <button
-              onClick={() => {
-                setForm(profil);
-                setNamaSatker(satker?.nama_satker || "");
-                setShowForm(true);
-              }}
-              className="px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-            >
-              {isProfilLengkap ? "Edit Profil" : "Lengkapi Profil"}
-            </button>
-          </div>
+          {!showForm && (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setShowConfirmClear(true)}
+                className="px-3 md:px-4 py-2 border border-red-200 hover:bg-red-50 text-red-500 text-sm rounded-lg transition-colors">
+                Clear Data
+              </button>
+              <button
+                onClick={() => { setForm(profil); setNamaSatker(satker?.nama_satker || ""); setShowForm(true); setFormErrors({}); setNamaSatkerError(""); }}
+                className="px-3 md:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors">
+                {isProfilLengkap ? "Edit Profil" : "Lengkapi Profil"}
+              </button>
+            </div>
+          )}
         </div>
 
         {saveMsg && (
-          <div className="mt-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg">
-            {saveMsg}
+          <div className={`mt-4 px-4 py-3 text-sm rounded-lg border ${
+            saveMsg.type === "success"
+              ? "bg-green-50 border-green-200 text-green-700"
+              : "bg-red-50 border-red-200 text-red-600"
+          }`}>
+            {saveMsg.text}
           </div>
         )}
 
-        {/* Status Cards */}
+        {/* Status Card */}
         <div className="mt-4 md:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
-            <p className="text-xs text-slate-700">Satuan Kerja</p>
+            <p className="text-xs text-slate-500">Satuan Kerja</p>
             <p className="text-sm font-bold text-slate-800 mt-1 break-words">{satker?.nama_satker}</p>
-            <p className="text-xs text-slate-700 mt-1">{satker?.kode_satker}</p>
+            <p className="text-xs text-slate-500 mt-1">{satker?.kode_satker}</p>
           </div>
         </div>
 
@@ -358,7 +320,7 @@ export default function DashboardSatker() {
         {!showForm && (
           <div className="mt-4 md:mt-6 space-y-4">
             <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
-              <h2 className="text-sm text-slate-700 mb-4">Profil Kantor</h2>
+              <h2 className="text-sm font-semibold text-slate-700 mb-4">Profil Kantor</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <Field label="Alamat Kantor" value={profil.alamat} />
                 <Field label="No. Telp Kantor" value={profil.no_telp} />
@@ -404,9 +366,10 @@ export default function DashboardSatker() {
                   <label className="text-xs font-medium text-slate-600">Nama Satker</label>
                   <input
                     value={namaSatker}
-                    onChange={(e) => setNamaSatker(e.target.value)}
-                    className={inputCls}
+                    onChange={(e) => { setNamaSatker(e.target.value); setNamaSatkerError(""); }}
+                    className={`${inputCls} ${namaSatkerError ? "border-red-300 focus:ring-red-300" : ""}`}
                   />
+                  {namaSatkerError && <p className="text-xs text-red-500 mt-1">{namaSatkerError}</p>}
                 </div>
                 <Input label="Alamat Lengkap Kantor" field="alamat" form={form} setForm={setForm} />
                 <Input label="Nomor Telp Kantor" field="no_telp" form={form} setForm={setForm} />
@@ -417,26 +380,26 @@ export default function DashboardSatker() {
             <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
               <h2 className="text-sm font-semibold text-slate-700 mb-2">Pejabat Perbendaharaan</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-                <PejabatGroup label="KPA" namaField="nama_kpa" nipField="nip_kpa" hpField="hp_kpa" form={form} setForm={setForm} />
-                <PejabatGroup label="PPK 1" namaField="nama_ppk1" nipField="nip_ppk1" hpField="hp_ppk1" required form={form} setForm={setForm} />
-                <PejabatGroup label="PPK 2" namaField="nama_ppk2" nipField="nip_ppk2" hpField="hp_ppk2" form={form} setForm={setForm} />
-                <PejabatGroup label="PPK 3" namaField="nama_ppk3" nipField="nip_ppk3" hpField="hp_ppk3" form={form} setForm={setForm} />
-                <PejabatGroup label="PPK 4" namaField="nama_ppk4" nipField="nip_ppk4" hpField="hp_ppk4" form={form} setForm={setForm} />
-                <PejabatGroup label="PPSPM" namaField="nama_ppspm" nipField="nip_ppspm" hpField="hp_ppspm" required form={form} setForm={setForm} />
-                <PejabatGroup label="Bendahara" namaField="nama_bendahara" nipField="nip_bendahara" hpField="hp_bendahara" form={form} setForm={setForm} />
-                <PejabatGroup label="Bendahara Pengeluaran" namaField="nama_bendahara_pengeluaran" nipField="nip_bendahara_pengeluaran" hpField="hp_bendahara_pengeluaran" required form={form} setForm={setForm} />
-                <PejabatGroup label="Bendahara Penerimaan" namaField="nama_bendahara_penerimaan" nipField="nip_bendahara_penerimaan" hpField="hp_bendahara_penerimaan" form={form} setForm={setForm} />
-                <PejabatGroup label="Bendahara Pembantu" namaField="nama_bendahara_pembantu" nipField="nip_bendahara_pembantu" hpField="hp_bendahara_pembantu" form={form} setForm={setForm} />
+                <PejabatGroup label="KPA" namaField="nama_kpa" nipField="nip_kpa" hpField="hp_kpa" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="PPK 1" namaField="nama_ppk1" nipField="nip_ppk1" hpField="hp_ppk1" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="PPK 2" namaField="nama_ppk2" nipField="nip_ppk2" hpField="hp_ppk2" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="PPK 3" namaField="nama_ppk3" nipField="nip_ppk3" hpField="hp_ppk3" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="PPK 4" namaField="nama_ppk4" nipField="nip_ppk4" hpField="hp_ppk4" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="PPSPM" namaField="nama_ppspm" nipField="nip_ppspm" hpField="hp_ppspm" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="Bendahara" namaField="nama_bendahara" nipField="nip_bendahara" hpField="hp_bendahara" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="Bendahara Pengeluaran" namaField="nama_bendahara_pengeluaran" nipField="nip_bendahara_pengeluaran" hpField="hp_bendahara_pengeluaran" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="Bendahara Penerimaan" namaField="nama_bendahara_penerimaan" nipField="nip_bendahara_penerimaan" hpField="hp_bendahara_penerimaan" form={form} setForm={setForm} errors={formErrors} />
+                <PejabatGroup label="Bendahara Pembantu" namaField="nama_bendahara_pembantu" nipField="nip_bendahara_pembantu" hpField="hp_bendahara_pembantu" form={form} setForm={setForm} errors={formErrors} />
               </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
               <h2 className="text-sm font-semibold text-slate-700 mb-4">PIC / Operator</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Nama PIC/Operator 1" field="nama_pic1" required form={form} setForm={setForm} />
-                <Input label="No. HP PIC/Operator 1" field="hp_pic1" required type="tel" form={form} setForm={setForm} />
-                <Input label="Nama PIC/Operator 2" field="nama_pic2" required form={form} setForm={setForm} />
-                <Input label="No. HP PIC/Operator 2" field="hp_pic2" required type="tel" form={form} setForm={setForm} />
+                <Input label="Nama PIC/Operator 1" field="nama_pic1" form={form} setForm={setForm} error={formErrors.nama_pic1} />
+                <Input label="No. HP PIC/Operator 1" field="hp_pic1" type="tel" form={form} setForm={setForm} error={formErrors.hp_pic1} />
+                <Input label="Nama PIC/Operator 2" field="nama_pic2" form={form} setForm={setForm} error={formErrors.nama_pic2} />
+                <Input label="No. HP PIC/Operator 2" field="hp_pic2" type="tel" form={form} setForm={setForm} error={formErrors.hp_pic2} />
                 <Input label="Nama PIC/Operator 3" field="nama_pic3" form={form} setForm={setForm} />
                 <Input label="No. HP PIC/Operator 3" field="hp_pic3" type="tel" form={form} setForm={setForm} />
                 <Input label="Nama PIC/Operator 4" field="nama_pic4" form={form} setForm={setForm} />
@@ -446,16 +409,14 @@ export default function DashboardSatker() {
 
             <div className="flex gap-3 justify-end pb-6">
               <button
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-              >
+                onClick={() => { setShowForm(false); setFormErrors({}); setNamaSatkerError(""); }}
+                className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
                 Batal
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-              >
+                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50">
                 {saving ? "Menyimpan..." : "Simpan Data"}
               </button>
             </div>
@@ -465,25 +426,32 @@ export default function DashboardSatker() {
 
       {/* Modal Konfirmasi Clear Data */}
       {showConfirmClear && (
-        <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4"
+        >
           <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">Hapus Semua Data Profil?</h3>
-            <p className="text-sm text-slate-700 mb-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <h3 className="text-sm font-semibold text-slate-800 mb-2 text-center">Hapus Semua Data Profil?</h3>
+            <p className="text-sm text-slate-500 mb-6 text-center leading-relaxed">
               Semua data profil kantor, pejabat, dan PIC akan dihapus. Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmClear(false)}
                 disabled={clearing}
-                className="flex-1 py-2 text-sm border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
-              >
+                className="flex-1 py-2 text-sm border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50">
                 Batal
               </button>
               <button
                 onClick={handleClearData}
                 disabled={clearing}
-                className="flex-1 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
-              >
+                className="flex-1 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50">
                 {clearing ? "Menghapus..." : "Ya, Hapus"}
               </button>
             </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Header from "@/components/header";
-import * as XLSX from "xlsx";
+// XLSX loaded dynamically to avoid ~1MB bundle upfront
 
 type Satker = {
   id: string;
@@ -138,7 +138,8 @@ export default function KelolaUser() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
+      const XLSX = await import("xlsx");
       const data = evt.target?.result;
       const wb = XLSX.read(data, { type: "binary" });
       const ws = wb.Sheets[wb.SheetNames[0]];
@@ -234,7 +235,8 @@ export default function KelolaUser() {
     fetchSatker();
   };
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.aoa_to_sheet([
       ["Kode Satker", "Nama Satker"],
       ["693457", "CONTOH NAMA SATKER"],
@@ -259,6 +261,27 @@ export default function KelolaUser() {
 
   const inputCls =
     "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="h-16 bg-white border-b border-slate-100 shadow-sm" />
+        <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
+          <div className="animate-pulse bg-slate-200 rounded h-7 w-40" />
+          <div className="animate-pulse bg-slate-200 rounded h-4 w-64" />
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-slate-100 last:border-0">
+                <div className="animate-pulse bg-slate-200 rounded h-4 w-24" />
+                <div className="animate-pulse bg-slate-200 rounded h-4 flex-1" />
+                <div className="animate-pulse bg-slate-200 rounded h-7 w-28" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
