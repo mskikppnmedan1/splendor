@@ -139,11 +139,6 @@ const PejabatSummary = ({ label, nama, nip, hp }: { label: string; nama?: string
 
 type FormErrors = Partial<Record<keyof ProfilSatker, string>>
 
-function validateForm(_form: ProfilSatker, _namaSatker: string): FormErrors {
-  // Tidak ada field yang diwajibkan — semua opsional
-  return {}
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function DashboardSatker() {
@@ -164,17 +159,22 @@ export default function DashboardSatker() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/satker/user");
-      if (!res.ok) {
+      // Jalankan kedua fetch secara paralel
+      const [resUser, resProfil] = await Promise.all([
+        fetch("/api/satker/user"),
+        fetch("/api/satker/profil"),
+      ]);
+
+      if (!resUser.ok) {
         window.location.href = "/login";
         return;
       }
-      const session = await res.json();
+
+      const session = await resUser.json();
       setSessionUser(session);
 
-      const res2 = await fetch("/api/satker/profil");
-      if (res2.ok) {
-        const data = await res2.json();
+      if (resProfil.ok) {
+        const data = await resProfil.json();
         setSatker(data.profiles);
         setNamaSatker(data.profiles?.nama_satker || "");
         if (data.profil) {

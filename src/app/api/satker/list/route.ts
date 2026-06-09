@@ -7,28 +7,22 @@ const supabase = createClient(
 )
 
 export async function GET() {
-  const { data, error } = await supabase
-    .from('profiles_satker')
-    .select('*')
-    .order('created_at', { ascending: false })
+  // Jalankan 3 query ke Supabase secara paralel
+  const [
+    { data, error },
+    { data: profilData },
+    { data: usersData },
+  ] = await Promise.all([
+    supabase.from('profiles_satker').select('*').order('nama_satker', { ascending: true }),
+    supabase.from('profil_satker').select('id, updated_at'),
+    supabase.from('users').select('id, updated_at').eq('role', 'satker'),
+  ])
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-
-  // Ambil updated_at profil
-  const { data: profilData } = await supabase
-    .from('profil_satker')
-    .select('id, updated_at')
 
   const profilMap = Object.fromEntries(
     (profilData || []).map((p: any) => [p.id, p.updated_at])
   )
-
-  // Ambil updated_at password dari tabel users
-  const { data: usersData } = await supabase
-    .from('users')
-    .select('id, updated_at') 
-    .eq('role', 'satker')
-
   const usersMap = Object.fromEntries(
     (usersData || []).map((u: any) => [u.id, u.updated_at])
   )
