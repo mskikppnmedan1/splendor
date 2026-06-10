@@ -140,7 +140,6 @@ const PejabatSummary = ({ label, nama, nip, hp }: { label: string; nama?: string
 type FormErrors = Partial<Record<keyof ProfilSatker, string>>
 
 function validateForm(_form: ProfilSatker, _namaSatker: string): FormErrors {
-  // Tidak ada field yang diwajibkan — semua opsional
   return {}
 }
 
@@ -155,6 +154,7 @@ export default function DashboardSatker() {
   const [showForm, setShowForm] = useState(false);
   const [showModalAkun, setShowModalAkun] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
   const [form, setForm] = useState<ProfilSatker>(empty);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
@@ -164,7 +164,6 @@ export default function DashboardSatker() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Jalankan kedua fetch secara paralel
       const [resUser, resProfil] = await Promise.all([
         fetch("/api/satker/user"),
         fetch("/api/satker/profil"),
@@ -189,6 +188,16 @@ export default function DashboardSatker() {
           } as ProfilSatker;
           setProfil(clean);
           setForm(clean);
+
+          // Tampilkan banner kalau profil belum lengkap
+          const lengkap = !!(
+            clean.nama_kpa && clean.nama_ppk1 && clean.nama_ppspm &&
+            clean.nama_bendahara_pengeluaran && clean.nama_pic1 && clean.nama_pic2
+          );
+          setShowBanner(!lengkap);
+        } else {
+          // Tidak ada profil sama sekali → pasti belum lengkap
+          setShowBanner(true);
         }
       }
       setLoading(false);
@@ -213,6 +222,12 @@ export default function DashboardSatker() {
       setFormErrors({});
       setSaveMsg({ type: "success", text: "Data berhasil disimpan!" });
       setTimeout(() => setSaveMsg(null), 4000);
+      // Sembunyikan banner kalau setelah save sudah lengkap
+      const lengkap = !!(
+        form.nama_kpa && form.nama_ppk1 && form.nama_ppspm &&
+        form.nama_bendahara_pengeluaran && form.nama_pic1 && form.nama_pic2
+      );
+      if (lengkap) setShowBanner(false);
     } else {
       const data = await res.json();
       setSaveMsg({ type: "error", text: data.error || "Gagal menyimpan data." });
@@ -231,6 +246,7 @@ export default function DashboardSatker() {
       setProfil(empty);
       setForm(empty);
       setShowConfirmClear(false);
+      setShowBanner(true);
       setSaveMsg({ type: "success", text: "Data profil berhasil dihapus." });
       setTimeout(() => setSaveMsg(null), 4000);
     } else {
@@ -248,6 +264,16 @@ export default function DashboardSatker() {
     profil.nama_kpa && profil.nama_ppk1 && profil.nama_ppspm &&
     profil.nama_bendahara_pengeluaran && profil.nama_pic1 && profil.nama_pic2;
 
+  const totalPejabat = [
+    profil.nama_kpa, profil.nama_ppk1, profil.nama_ppk2, profil.nama_ppk3, profil.nama_ppk4,
+    profil.nama_ppspm, profil.nama_bendahara, profil.nama_bendahara_pengeluaran,
+    profil.nama_bendahara_penerimaan, profil.nama_bendahara_pembantu,
+  ].filter(Boolean).length;
+
+  const totalOperator = [
+    profil.nama_pic1, profil.nama_pic2, profil.nama_pic3, profil.nama_pic4,
+  ].filter(Boolean).length;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50">
@@ -256,6 +282,8 @@ export default function DashboardSatker() {
           <Skeleton className="h-7 w-48" />
           <Skeleton className="h-4 w-64" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+            <Skeleton className="h-20 rounded-xl" />
+            <Skeleton className="h-20 rounded-xl" />
             <Skeleton className="h-20 rounded-xl" />
           </div>
           <CardSkeleton />
@@ -281,6 +309,29 @@ export default function DashboardSatker() {
       />
 
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
+
+        {/* Banner notifikasi belum lengkap */}
+        {showBanner && !showForm && (
+          <div className="flex items-start gap-3 mb-4 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+            <svg className="w-5 h-5 shrink-0 mt-0.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <div className="flex-1 text-sm">
+              <p className="font-semibold">Data profil belum lengkap</p>
+              <p className="text-amber-700 mt-0.5">Segera lengkapi data KPA, PPK 1, PPSPM, Bendahara Pengeluaran, dan minimal 2 PIC/Operator agar profil satker Anda tercatat lengkap.</p>
+            </div>
+            <button
+              onClick={() => setShowBanner(false)}
+              className="shrink-0 text-amber-400 hover:text-amber-600 transition-colors"
+              aria-label="Tutup notifikasi"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-slate-800">Dashboard Satker</h1>
@@ -312,12 +363,26 @@ export default function DashboardSatker() {
           </div>
         )}
 
-        {/* Status Card */}
+        {/* Status Cards */}
         <div className="mt-4 md:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
             <p className="text-xs text-slate-500">Satuan Kerja</p>
             <p className="text-sm font-bold text-slate-800 mt-1 break-words">{satker?.nama_satker}</p>
             <p className="text-xs text-slate-500 mt-1">{satker?.kode_satker}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
+            <p className="text-xs text-slate-500">Pejabat Terisi</p>
+            <p className="text-2xl font-bold text-slate-800 mt-1">
+              {totalPejabat}
+              <span className="text-sm font-normal text-slate-400 ml-1">/ 10</span>
+            </p>
+          </div>
+          <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-5">
+            <p className="text-xs text-slate-500">Operator Terisi</p>
+            <p className="text-2xl font-bold text-slate-800 mt-1">
+              {totalOperator}
+              <span className="text-sm font-normal text-slate-400 ml-1">/ 4</span>
+            </p>
           </div>
         </div>
 
