@@ -60,13 +60,11 @@ const emptyProfil: ProfilSatker = {
   nama_pic3: "", hp_pic3: "", nama_pic4: "", hp_pic4: "",
 };
 
-// Sanitize semua null/undefined → "" supaya input tidak error
 const sanitizeProfil = (p: Partial<ProfilSatker>): Partial<ProfilSatker> =>
   Object.fromEntries(
     Object.entries(p).map(([k, v]) => [k, v ?? ""])
   ) as Partial<ProfilSatker>;
 
-// Semua field nama yang bisa dicari
 const NAMA_FIELDS: (keyof ProfilSatker)[] = [
   "nama_kpa",
   "nama_ppk1", "nama_ppk2", "nama_ppk3", "nama_ppk4",
@@ -273,6 +271,15 @@ const NAV_ITEMS = [
   { label: "Kelola User", href: "/dashboard/admin/kelola" },
 ];
 
+// ── Utility ───────────────────────────────────────────────────────────────────
+
+const formatWA = (hp: string) => {
+  const clean = hp.replace(/\D/g, "");
+  return clean.startsWith("0") ? "62" + clean.slice(1) : clean;
+};
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
 const InfoRow = ({ label, value }: { label: string; value?: string }) => (
   <div className="flex items-start justify-between gap-4 py-2.5 border-b border-slate-100 last:border-0">
     <p className="text-xs text-slate-500 shrink-0 w-32">{label}</p>
@@ -286,10 +293,49 @@ const PejabatCard = ({ jabatan, nama, nip, hp }: { jabatan: string; nama?: strin
     {nama ? (
       <div className="space-y-1">
         <p className="text-sm font-medium text-slate-800">{nama}</p>
-        {nip && <div className="flex items-center gap-1.5"><span className="text-xs text-slate-400">NIP</span><span className="text-xs text-slate-700">{nip}</span></div>}
-        {hp && <div className="flex items-center gap-1.5"><span className="text-xs text-slate-400">HP</span><span className="text-xs text-slate-700">{hp}</span></div>}
+        {nip && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-400">NIP</span>
+            <span className="text-xs text-slate-700">{nip}</span>
+          </div>
+        )}
+        {hp && (
+          <>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400">HP</span>
+              <span className="text-xs text-slate-700">{hp}</span>
+            </div>
+            {/* Tombol WA + Call */}
+            <div className="flex items-center gap-1.5 pt-1">
+              <a
+                href={`https://wa.me/${formatWA(hp)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Chat via WhatsApp"
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-50 hover:bg-green-100 text-green-700 text-xs font-medium transition-colors border border-green-200"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zm-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884z" />
+                </svg>
+                WA
+              </a>
+              <a
+                href={`tel:${hp.replace(/\D/g, "")}`}
+                title="Telepon"
+                className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-medium transition-colors border border-blue-200"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" />
+                </svg>
+                Call
+              </a>
+            </div>
+          </>
+        )}
       </div>
-    ) : <p className="text-xs text-slate-300 italic">Belum diisi</p>}
+    ) : (
+      <p className="text-xs text-slate-300 italic">Belum diisi</p>
+    )}
   </div>
 );
 
@@ -310,6 +356,8 @@ const PejabatFormGroup = ({ jabatan, prefix, form, setForm, withNip = true }: { 
     <FormField label="HP" value={(form as any)[`hp_${prefix}`] ?? ""} onChange={(v) => setForm({ ...form, [`hp_${prefix}`]: v })} />
   </div>
 );
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function DashboardAdmin() {
   const [satkerList, setSatkerList] = useState<Satker[]>([]);
@@ -347,7 +395,6 @@ export default function DashboardAdmin() {
   type FilterStatus = "semua" | "sudah" | "tidaklengkap" | "belum"
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("semua");
 
-  // Single batch call instead of N individual /api/satker/profil requests
   const fetchSatker = useCallback(async () => {
     setLoading(true);
     const [listRes, batchRes] = await Promise.all([
@@ -404,7 +451,6 @@ export default function DashboardAdmin() {
     setSaveMsg("");
     const cached = profilMap[satker.id];
     if (cached) {
-      // sanitize dulu supaya tidak ada null masuk ke input
       setEditForm({ ...emptyProfil, ...sanitizeProfil(cached) });
     } else {
       setEditLoading(true);
@@ -450,7 +496,6 @@ export default function DashboardAdmin() {
     setShowDetail(false);
   };
 
-
   const handleExportTemplate = async (colsFilter: string[]) => {
     const XLSX = await import("xlsx");
     const rows = satkerList.map((s) => {
@@ -471,7 +516,6 @@ export default function DashboardAdmin() {
 
   const handleExport = async (colsFilter?: string[]) => {
     setExporting(true);
-    // Use already-cached profilMap; only fetch missing entries
     const rows = await Promise.all(satkerList.map(async (s) => {
       let p: ProfilSatker = profilMap[s.id] ?? { ...emptyProfil };
       if (!profilMap[s.id]) {
@@ -612,16 +656,11 @@ export default function DashboardAdmin() {
   const skipCount = importRows.filter((r) => r.status === "skip").length;
   const errorCount = importRows.filter((r) => r.status === "error").length;
 
-  // Ada data apapun = sudah isi (minimal 1 field)
   const hasProfil = (s: Satker) => {
     const p = profilMap[s.id];
     return !!(p && (p.nama_kpa || p.nama_ppk1 || p.alamat));
   };
 
-  // Field wajib minimum = dianggap lengkap
-  // Profil kantor: alamat, no_telp, email
-  // Pejabat: KPA, PPK1, Bendahara Pengeluaran (PPSPM tidak wajib)
-  // PIC: minimal nama & HP PIC 1
   const isLengkap = (s: Satker) => {
     const p = profilMap[s.id];
     if (!p) return false;
@@ -634,9 +673,9 @@ export default function DashboardAdmin() {
     );
   };
 
-  const countSudah   = satkerList.filter(s => hasProfil(s) && isLengkap(s)).length;
-  const countKurang  = satkerList.filter(s => hasProfil(s) && !isLengkap(s)).length;
-  const countBelum   = satkerList.filter(s => !hasProfil(s)).length;
+  const countSudah  = satkerList.filter(s => hasProfil(s) && isLengkap(s)).length;
+  const countKurang = satkerList.filter(s => hasProfil(s) && !isLengkap(s)).length;
+  const countBelum  = satkerList.filter(s => !hasProfil(s)).length;
 
   const filtered = satkerList.filter((s) => {
     if (filterStatus === "sudah"        && !(hasProfil(s) && isLengkap(s))) return false;
@@ -659,16 +698,6 @@ export default function DashboardAdmin() {
 
   const activeConfig = getActiveConfig();
 
-  const getImportTitle = () => {
-    if (!importKategori) return null;
-    if (importKategori === "semua") return "Semua Data";
-    if (importKategori === "pejabat" && importSubPejabat) {
-      return `Pejabat › ${SUB_PEJABAT_CONFIG[importSubPejabat].label}`;
-    }
-    if (importKategori === "pejabat") return "Pejabat Perbendaharaan";
-    return IMPORT_KATEGORI_CONFIG[importKategori].label;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-100">
@@ -677,7 +706,8 @@ export default function DashboardAdmin() {
           <div className="animate-pulse bg-slate-200 rounded-lg h-8 w-48" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-white rounded-xl h-24 border border-slate-200" />)}
-          </div>          <div className="flex gap-2">
+          </div>
+          <div className="flex gap-2">
             <div className="animate-pulse bg-slate-200 rounded-lg h-10 flex-1" />
             <div className="animate-pulse bg-slate-200 rounded-lg h-10 w-32" />
             <div className="animate-pulse bg-slate-200 rounded-lg h-10 w-32" />
@@ -729,31 +759,16 @@ export default function DashboardAdmin() {
 
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 space-y-5">
 
-        {/* ── Stats cards — klik untuk filter ── */}
+        {/* ── Stats cards ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total */}
-          <button
-            onClick={() => setFilterStatus("semua")}
-            className={`text-left bg-white rounded-xl border p-4 transition-all ${
-              filterStatus === "semua"
-                ? "border-blue-400 ring-2 ring-blue-100"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
+          <button onClick={() => setFilterStatus("semua")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${filterStatus === "semua" ? "border-blue-400 ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-300"}`}>
             <p className="text-xs text-slate-500 mb-1">Total Satker</p>
             <p className="text-2xl font-bold text-slate-800">{satkerList.length}</p>
             {filterStatus === "semua" && <p className="text-xs text-blue-500 mt-1 font-medium">Semua ditampilkan</p>}
           </button>
-
-          {/* Lengkap */}
-          <button
-            onClick={() => setFilterStatus(filterStatus === "sudah" ? "semua" : "sudah")}
-            className={`text-left bg-white rounded-xl border p-4 transition-all ${
-              filterStatus === "sudah"
-                ? "border-emerald-400 ring-2 ring-emerald-100"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
+          <button onClick={() => setFilterStatus(filterStatus === "sudah" ? "semua" : "sudah")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${filterStatus === "sudah" ? "border-emerald-400 ring-2 ring-emerald-100" : "border-slate-200 hover:border-slate-300"}`}>
             <div className="flex items-center gap-1.5 mb-1">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <p className="text-xs text-slate-500">Lengkap</p>
@@ -761,16 +776,8 @@ export default function DashboardAdmin() {
             <p className="text-2xl font-bold text-emerald-600">{countSudah}</p>
             {filterStatus === "sudah" && <p className="text-xs text-emerald-500 mt-1 font-medium">Filter aktif</p>}
           </button>
-
-          {/* Tidak lengkap */}
-          <button
-            onClick={() => setFilterStatus(filterStatus === "tidaklengkap" ? "semua" : "tidaklengkap")}
-            className={`text-left bg-white rounded-xl border p-4 transition-all ${
-              filterStatus === "tidaklengkap"
-                ? "border-orange-400 ring-2 ring-orange-100"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
+          <button onClick={() => setFilterStatus(filterStatus === "tidaklengkap" ? "semua" : "tidaklengkap")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${filterStatus === "tidaklengkap" ? "border-orange-400 ring-2 ring-orange-100" : "border-slate-200 hover:border-slate-300"}`}>
             <div className="flex items-center gap-1.5 mb-1">
               <div className="w-2 h-2 rounded-full bg-orange-400" />
               <p className="text-xs text-slate-500">Tidak Lengkap</p>
@@ -778,16 +785,8 @@ export default function DashboardAdmin() {
             <p className="text-2xl font-bold text-orange-500">{countKurang}</p>
             {filterStatus === "tidaklengkap" && <p className="text-xs text-orange-500 mt-1 font-medium">Filter aktif</p>}
           </button>
-
-          {/* Belum isi */}
-          <button
-            onClick={() => setFilterStatus(filterStatus === "belum" ? "semua" : "belum")}
-            className={`text-left bg-white rounded-xl border p-4 transition-all ${
-              filterStatus === "belum"
-                ? "border-red-400 ring-2 ring-red-100"
-                : "border-slate-200 hover:border-slate-300"
-            }`}
-          >
+          <button onClick={() => setFilterStatus(filterStatus === "belum" ? "semua" : "belum")}
+            className={`text-left bg-white rounded-xl border p-4 transition-all ${filterStatus === "belum" ? "border-red-400 ring-2 ring-red-100" : "border-slate-200 hover:border-slate-300"}`}>
             <div className="flex items-center gap-1.5 mb-1">
               <div className="w-2 h-2 rounded-full bg-slate-300" />
               <p className="text-xs text-slate-500">Belum Isi</p>
@@ -801,17 +800,12 @@ export default function DashboardAdmin() {
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama satker, kode, atau nama pejabat..."
-              className="w-full pl-9 pr-4 py-2.5 text-sm text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
-            />
+              className="w-full pl-9 pr-4 py-2.5 text-sm text-slate-800 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all" />
           </div>
           {search && (
-            <button onClick={() => setSearch("")} className="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors">
-              Reset
-            </button>
+            <button onClick={() => setSearch("")} className="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 bg-white border border-slate-200 rounded-lg transition-colors">Reset</button>
           )}
           <p className="text-xs text-slate-400 shrink-0">{filtered.length} satker</p>
         </div>
@@ -858,8 +852,7 @@ export default function DashboardAdmin() {
                           : <span className="italic">Belum diisi</span>}
                       </td>
                       <td className="px-5 py-3.5">
-                        <button
-                          onClick={() => openDetail(s)}
+                        <button onClick={() => openDetail(s)}
                           className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100">
                           Detail
                         </button>
@@ -899,7 +892,7 @@ export default function DashboardAdmin() {
         </div>
       </div>
 
-      {/* Modal Detail */}
+      {/* ── Modal Detail ── */}
       {showDetail && selectedSatker && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
           <div className="bg-white rounded-t-2xl md:rounded-xl shadow-lg w-full md:max-w-2xl max-h-[92vh] flex flex-col">
@@ -914,7 +907,10 @@ export default function DashboardAdmin() {
                     className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs rounded-lg border border-rose-200 transition-colors">
                     Clear Data
                   </button>
-                  <button onClick={() => { setShowDetail(false); openEdit(selectedSatker); }} className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs rounded-lg border border-emerald-200 transition-colors">Edit</button>
+                  <button onClick={() => { setShowDetail(false); openEdit(selectedSatker); }}
+                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs rounded-lg border border-emerald-200 transition-colors">
+                    Edit
+                  </button>
                   <button onClick={() => setShowDetail(false)} className="text-slate-300 hover:text-slate-600 text-xl leading-none transition-colors">&times;</button>
                 </div>
               </div>
@@ -930,11 +926,19 @@ export default function DashboardAdmin() {
               )}
             </div>
             <div className="overflow-y-auto px-5 py-4 flex-1">
-              {profilLoading ? <div className="py-16 text-center text-sm text-slate-500">Memuat profil...</div>
-                : !selectedProfil ? <div className="py-16 text-center text-sm text-slate-500">Satker belum mengisi data profil.</div>
+              {profilLoading
+                ? <div className="py-16 text-center text-sm text-slate-500">Memuat profil...</div>
+                : !selectedProfil
+                ? <div className="py-16 text-center text-sm text-slate-500">Satker belum mengisi data profil.</div>
                 : (
                   <>
-                    {activeTab === "kantor" && <div><InfoRow label="Alamat" value={selectedProfil.alamat} /><InfoRow label="No. Telepon" value={selectedProfil.no_telp} /><InfoRow label="Email" value={selectedProfil.email} /></div>}
+                    {activeTab === "kantor" && (
+                      <div>
+                        <InfoRow label="Alamat" value={selectedProfil.alamat} />
+                        <InfoRow label="No. Telepon" value={selectedProfil.no_telp} />
+                        <InfoRow label="Email" value={selectedProfil.email} />
+                      </div>
+                    )}
                     {activeTab === "pejabat" && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <PejabatCard jabatan="KPA" nama={selectedProfil.nama_kpa} nip={selectedProfil.nip_kpa} hp={selectedProfil.hp_kpa} />
@@ -967,7 +971,7 @@ export default function DashboardAdmin() {
         </div>
       )}
 
-      {/* Modal Edit */}
+      {/* ── Modal Edit ── */}
       {showEdit && editSatker && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
           <div className="bg-white rounded-t-2xl md:rounded-xl shadow-lg w-full md:max-w-2xl max-h-[92vh] flex flex-col">
@@ -1044,7 +1048,7 @@ export default function DashboardAdmin() {
         </div>
       )}
 
-      {/* Modal Import Excel */}
+      {/* ── Modal Import Excel ── */}
       {showImport && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
           <div className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1060,8 +1064,6 @@ export default function DashboardAdmin() {
                 <>
                   <p className="text-xs text-slate-500">Pilih kategori data yang ingin diimport:</p>
                   <div className="grid grid-cols-1 gap-3">
-
-                    {/* Semua Data */}
                     <button onClick={() => { setImportKategori("semua"); setImportSubPejabat(null); setImportRows([]); setImportDone(false); }}
                       className="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-slate-400 hover:bg-slate-50 transition-all text-left group">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-slate-100">
@@ -1283,7 +1285,8 @@ export default function DashboardAdmin() {
           </div>
         </div>
       )}
-      {/* Modal Konfirmasi Clear Data */}
+
+      {/* ── Modal Konfirmasi Clear Data ── */}
       {showConfirmClear && clearTarget && (
         <div className="fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
